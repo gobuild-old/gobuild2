@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/codegangsta/cli"
@@ -31,16 +32,13 @@ func init() {
 			Action: runInit,
 		},
 		cli.Command{
-			Name:   "web",
-			Usage:  "start gobuild web server",
-			Action: runWeb,
-		},
-		cli.Command{
 			Name:   "daemon",
 			Usage:  "start gobuild compile daemon",
 			Action: runDaemon,
 		},
 	)
+
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 }
 
 func main() {
