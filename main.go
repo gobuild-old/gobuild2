@@ -14,10 +14,6 @@ func runInit(c *cli.Context) {
 	println("init")
 }
 
-func runWeb(c *cli.Context) {
-	println("web")
-}
-
 func runDaemon(c *cli.Context) {
 	println("daemon")
 }

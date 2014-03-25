@@ -1,0 +1,11 @@
+[server]
+DOMAIN = localhost
+ADDR = 
+PORT = 8000
+
+[database]
+DBTYPE = mysql
+HOST =
+NAME = gobuild
+USER = root
+PASSWD = toor
