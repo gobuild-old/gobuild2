@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/gobuild/log"
 
 	"github.com/codegangsta/cli"
 	"github.com/codegangsta/martini"

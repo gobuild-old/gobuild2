@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/codegangsta/cli"
@@ -23,7 +22,7 @@ var app = cli.NewApp()
 
 func init() {
 	app.Name = "gobuild"
-	app.Usage = "<init | web | daemon>"
+	app.Usage = "[COMMANDS]"
 	app.Version = VERSION
 	app.Commands = append(app.Commands,
 		cli.Command{
@@ -37,8 +36,6 @@ func init() {
 			Action: runDaemon,
 		},
 	)
-
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
 }
 
 func main() {
