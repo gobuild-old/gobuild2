@@ -8,7 +8,7 @@ import (
 	"github.com/gobuild/log"
 
 	"github.com/codegangsta/cli"
-	"github.com/codegangsta/martini"
+	"github.com/go-martini/martini"
 )
 
 func init() {
