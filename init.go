@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"launchpad.net/goyaml"
 
 	"github.com/codegangsta/cli"
@@ -16,6 +17,7 @@ func init() {
 		Action: runInit,
 	}
 	app.Commands = append(app.Commands, c)
+	_ = os.Stdout
 }
 
 const RCFILE = ".gobuild.yml"
