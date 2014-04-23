@@ -1,0 +1,20 @@
+{
+    "paths": [
+        "."
+    ],
+    "depth": 2,
+    "exclude": [
+        "~$",
+        "\\.swx$",
+        "\\.exe$"
+    ],
+    "include": [
+        "\\.go$"
+    ],
+    "command": [
+        "go", "build"
+    ],
+    "env": {
+        "POWERD_BY": "github.com/shxsun/fswatch"
+    }
+}

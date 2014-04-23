@@ -4,12 +4,14 @@ import (
 	"os"
 
 	"github.com/codegangsta/cli"
+	"github.com/gobuild/gobuild2/modules/worker"
 )
 
 const VERSION = "0.0.1"
 
-func runDaemon(c *cli.Context) {
-	println("daemon")
+func runSlave(c *cli.Context) {
+	println("slave")
+	worker.Work()
 }
 
 var app = cli.NewApp()
@@ -20,9 +22,9 @@ func init() {
 	app.Version = VERSION
 	app.Commands = append(app.Commands,
 		cli.Command{
-			Name:   "daemon",
-			Usage:  "start gobuild compile daemon",
-			Action: runDaemon,
+			Name:   "slave",
+			Usage:  "start gobuild compile slave",
+			Action: runSlave,
 		},
 	)
 }
