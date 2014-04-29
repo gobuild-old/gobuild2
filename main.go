@@ -4,14 +4,12 @@ import (
 	"os"
 
 	"github.com/codegangsta/cli"
-	"github.com/gobuild/gobuild2/modules/worker"
 )
 
 const VERSION = "0.0.1"
 
 func runSlave(c *cli.Context) {
 	println("slave")
-	worker.Work()
 }
 
 var app = cli.NewApp()

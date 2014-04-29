@@ -9,3 +9,4 @@ HOST =
 NAME = gobuild
 USER = root
 PASSWD = toor
+# SSLMODE = false

@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/gobuild/gobuild2/models"
+	"github.com/gobuild/gobuild2/pkg/config"
 	"github.com/gobuild/gobuild2/routers"
 	"github.com/gobuild/log"
 
@@ -40,20 +42,17 @@ func newMartini() *martini.ClassicMartini {
 	return m
 }
 
-func initConfig(confPath string) *Config {
-	cfg, err := readCfg(confPath)
-	if err != nil {
+func runWeb(c *cli.Context) {
+	var err error
+	if err = config.Load(c.String("conf")); err != nil {
 		log.Fatal(err)
 	}
-	return cfg
-}
-
-func runWeb(c *cli.Context) {
-	cfg := initConfig(c.String("conf"))
+	if err = models.InitDB(); err != nil {
+		log.Fatal(err)
+	}
+	cfg := config.Config
 	m := newMartini()
-	m.Get("/echo", func() string {
-		return "hello"
-	})
+	m.Get("/ruok", routers.Ruok)
 	m.Any("/", routers.Home)
 	listenAddr := fmt.Sprintf("%s:%d",
 		cfg.Server.Addr,
