@@ -22,6 +22,12 @@ var Config struct {
 		Password string `gcfg:"PASSWD"`
 		SslMode  string `gcfg:"SSLMODE"`
 	}
+	Social map[string]*struct {
+		ClientId     string `gcfg:"ID"`
+		ClientSecret string `gcfg:"SECRET"`
+		AuthURL      string `gcfg:"AUTHURL"`
+		TokenURL     string `gcfg:"TOKENURL"`
+	}
 }
 
 func Load(cfgPath string) (err error) {

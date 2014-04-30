@@ -19,11 +19,11 @@ type Task struct {
 func init() { tables = append(tables, new(Task)) }
 
 func CreateTask(task *Task) (*Task, error) {
-	_, err := x.Insert(task)
+	_, err := orm.Insert(task)
 	return task, err
 }
 
 func UpdateTaskStatus(tid int64, status string) error {
-	_, err := x.Id(tid).Update(&Task{Status: status})
+	_, err := orm.Id(tid).Update(&Task{Status: status})
 	return err
 }

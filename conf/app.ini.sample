@@ -10,3 +10,9 @@ NAME = gobuild
 USER = root
 PASSWD = toor
 # SSLMODE = false
+
+[social "github"]
+ID = 
+SECRET = 
+AUTHURL  =
+TOKENURL =
