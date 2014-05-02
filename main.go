@@ -24,6 +24,11 @@ func init() {
 			Usage:  "start gobuild compile slave",
 			Action: runSlave,
 		},
+		cli.Command{
+			Name:   "pack",
+			Usage:  "build and pack file into tgz or zip",
+			Action: runPack,
+		},
 	)
 }
 
