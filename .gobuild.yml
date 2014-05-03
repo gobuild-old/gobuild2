@@ -3,3 +3,4 @@ filesets:
   - README.md
   excludes:
   - .*.go
+  - .*.svn

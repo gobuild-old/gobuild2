@@ -27,13 +27,25 @@ type PackageConfig struct {
 		Includes []string `yaml:"includes"`
 		Excludes []string `yaml:"excludes"`
 	} `yaml:"filesets"`
+	Settings struct {
+		GoFlags   string `yaml:"goflags"`
+		CGOEnable bool   `yaml"cgoenable"`
+	}
+}
+
+var defaultDcfg *PackageConfig
+
+func init() {
+	pcfg := &PackageConfig{}
+	pcfg.Filesets.Includes = []string{"README.md", "LICENSE"}
+	pcfg.Filesets.Excludes = []string{".*.go"}
+	pcfg.Settings.CGOEnable = true
+	pcfg.Settings.GoFlags = ""
+	defaultDcfg = pcfg
 }
 
 func runInit(c *cli.Context) {
-	pcfg := &PackageConfig{}
-	pcfg.Filesets.Includes = []string{"README.md"}
-	pcfg.Filesets.Excludes = []string{".*.go"}
-	data, _ := goyaml.Marshal(pcfg)
+	data, _ := goyaml.Marshal(defaultDcfg)
 	if err := ioutil.WriteFile(RCFILE, data, 0644); err != nil {
 		log.Fatal(err)
 	} else {
