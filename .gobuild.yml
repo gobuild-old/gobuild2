@@ -1,6 +1,7 @@
 filesets:
   includes:
   - README.md
+  - templates
   excludes:
   - .*.go
   - .*.svn

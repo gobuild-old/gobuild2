@@ -1,4 +1,4 @@
-package main
+package web
 
 import (
 	"fmt"
@@ -15,17 +15,6 @@ import (
 	"github.com/martini-contrib/render"
 )
 
-func init() {
-	c := cli.Command{
-		Name:   "web",
-		Usage:  "start gobuild web server",
-		Action: runWeb,
-		Flags: []cli.Flag{
-			cli.StringFlag{"conf,f", "conf/app.ini", "config file"},
-		},
-	}
-	app.Commands = append(app.Commands, c)
-}
 func newMartini() *martini.ClassicMartini {
 	/*
 		r := martini.NewRouter()
@@ -42,7 +31,7 @@ func newMartini() *martini.ClassicMartini {
 	return m
 }
 
-func runWeb(c *cli.Context) {
+func Action(c *cli.Context) {
 	var err error
 	if err = config.Load(c.String("conf")); err != nil {
 		log.Fatal(err)

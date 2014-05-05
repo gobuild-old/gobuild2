@@ -2,8 +2,12 @@ package main
 
 import (
 	"os"
+	"path/filepath"
+	"runtime"
 
 	"github.com/codegangsta/cli"
+	"github.com/gobuild/gobuild2/pkg/cmd/pack"
+	"github.com/gobuild/gobuild2/pkg/cmd/web"
 )
 
 const VERSION = "0.0.1"
@@ -15,6 +19,9 @@ func runSlave(c *cli.Context) {
 var app = cli.NewApp()
 
 func init() {
+	cwd, _ := os.Getwd()
+	program := filepath.Base(cwd)
+
 	app.Name = "gobuild"
 	app.Usage = "[COMMANDS]"
 	app.Version = VERSION
@@ -25,9 +32,28 @@ func init() {
 			Action: runSlave,
 		},
 		cli.Command{
+			Name:   "init",
+			Usage:  "initial gobuild.yml file",
+			Action: runInit,
+		},
+		cli.Command{
 			Name:   "pack",
 			Usage:  "build and pack file into tgz or zip",
-			Action: runPack,
+			Action: pack.Action,
+			Flags: []cli.Flag{
+				cli.StringFlag{"os", runtime.GOOS, "operation system"},
+				cli.StringFlag{"arch", runtime.GOARCH, "arch"},
+				cli.StringFlag{"depth", "3", "depth of file to walk"},
+				cli.StringFlag{"output,o", program + ".zip", "target file"},
+			},
+		},
+		cli.Command{
+			Name:   "web",
+			Usage:  "start gobuild web server",
+			Action: web.Action,
+			Flags: []cli.Flag{
+				cli.StringFlag{"conf,f", "conf/app.ini", "config file"},
+			},
 		},
 	)
 }

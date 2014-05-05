@@ -36,3 +36,28 @@ func Load(cfgPath string) (err error) {
 	c.Server.RootUrl = fmt.Sprintf("http://%s:%d", c.Server.Domain, c.Server.Port)
 	return
 }
+
+// .gobuild.yml file
+type PackageConfig struct {
+	Filesets struct {
+		Includes []string `yaml:"includes"`
+		Excludes []string `yaml:"excludes"`
+	} `yaml:"filesets"`
+	Settings struct {
+		GoFlags   string `yaml:"goflags"`
+		CGOEnable bool   `yaml"cgoenable"`
+	}
+}
+
+var DefaultPcfg *PackageConfig
+
+const RCFILE = ".gobuild.yml"
+
+func init() {
+	pcfg := &PackageConfig{}
+	pcfg.Filesets.Includes = []string{"README.md", "LICENSE"}
+	pcfg.Filesets.Excludes = []string{".*.go"}
+	pcfg.Settings.CGOEnable = true
+	pcfg.Settings.GoFlags = ""
+	DefaultPcfg = pcfg
+}
