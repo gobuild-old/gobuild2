@@ -25,7 +25,7 @@ func findFiles(path string, depth int, focuses, skips []*regexp.Regexp) ([]strin
 				return filepath.SkipDir
 			}
 		}
-		name := info.Name()
+		name := path //info.Name()
 		isSkip := true
 		for _, focus := range focuses {
 			if focus.MatchString(name) {
@@ -42,6 +42,7 @@ func findFiles(path string, depth int, focuses, skips []*regexp.Regexp) ([]strin
 		// log.Println(isSkip, name)
 		if !isSkip {
 			files = append(files, path)
+			log.Debug("add file:", name, path)
 		}
 		return nil
 	})

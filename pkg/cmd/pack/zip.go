@@ -2,6 +2,7 @@ package pack
 
 import (
 	"archive/zip"
+	"bytes"
 	"io"
 	"os"
 	"path/filepath"
@@ -15,7 +16,7 @@ func sanitizedName(filename string) string {
 		filename = filename[2:]
 	}
 	filename = filepath.ToSlash(filename)
-	filename = strings.TrimLeft(filename, "/.")
+	filename = filepath.Clean(filename)
 	return strings.Replace(filename, "../", "", -1)
 }
 
@@ -38,15 +39,27 @@ func CreateZip(filename string) (*Zip, error) {
 }
 
 func (z *Zip) Add(filename string) error {
-	file, err := os.Open(filename)
+	info, err := os.Lstat(filename)
 	if err != nil {
 		return err
 	}
-	defer file.Close()
-	info, err := file.Stat()
-	if err != nil {
-		return err
+	// content
+	var reader io.Reader
+	if info.Mode()&os.ModeSymlink != 0 {
+		target, err := os.Readlink(filename)
+		if err != nil {
+			return err
+		}
+		reader = bytes.NewBuffer([]byte(target))
+	} else {
+		file, err := os.Open(filename)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+		reader = file
 	}
+	// header
 	hdr, err := zip.FileInfoHeader(info)
 	if err != nil {
 		return err
@@ -61,7 +74,7 @@ func (z *Zip) Add(filename string) error {
 		return err
 	}
 	if !info.IsDir() {
-		_, err = io.Copy(writer, file)
+		_, err = io.Copy(writer, reader)
 		return err
 	}
 	return nil
