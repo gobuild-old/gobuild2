@@ -1,6 +1,7 @@
 package pack
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -110,9 +111,22 @@ func Action(c *cli.Context) {
 	program := filepath.Base(cwd)
 	files = append(files, program)
 
-	// zip file
-	var z Archiever
-	z, err = CreateZip(output)
+	hasExt := func(ext string) bool {
+		return strings.HasSuffix(output, ext)
+	}
+
+	var z Archiver
+	switch {
+	case hasExt(".zip"):
+		fmt.Println("zip format")
+		z, err = CreateZip(output)
+	case hasExt(".tar"):
+		fmt.Println("tar format")
+		z, err = CreateTar(output)
+	default:
+		fmt.Println("unsupport file archive format")
+		os.Exit(1)
+	}
 	if err != nil {
 		return
 	}

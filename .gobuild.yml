@@ -2,6 +2,8 @@ filesets:
   includes:
   - README.md
   - templates
+  - public
+  - conf
   excludes:
   - .*.go
   - .*.svn
