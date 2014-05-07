@@ -18,7 +18,7 @@ import (
 
 func init() {
 	log.SetFlags(log.Linfo)
-	log.SetOutputLevel(log.Ldebug)
+	// log.SetOutputLevel(log.Ldebug)
 }
 
 func findFiles(path string, depth int, skips []*regexp.Regexp) ([]string, error) {
@@ -93,6 +93,29 @@ func Action(c *cli.Context) {
 		files = append(files, fs...)
 	}
 
+	log.Infof("archive file to: %s", output)
+	var z Archiver
+	hasExt := func(ext string) bool { return strings.HasSuffix(output, ext) }
+	switch {
+	case hasExt(".zip"):
+		fmt.Println("zip format")
+		z, err = CreateZip(output)
+	case hasExt(".tar"):
+		fmt.Println("tar format")
+		z, err = CreateTar(output)
+	case hasExt(".tgz"):
+		fallthrough
+	case hasExt(".tar.gz"):
+		fmt.Println("tar.gz format")
+		z, err = CreateTgz(output)
+	default:
+		fmt.Println("unsupport file archive format")
+		os.Exit(1)
+	}
+	if err != nil {
+		return
+	}
+
 	// build source
 	if err = sess.Command("go", "build").Run(); err != nil {
 		return
@@ -101,31 +124,12 @@ func Action(c *cli.Context) {
 	program := filepath.Base(cwd)
 	files = append(files, program)
 
-	hasExt := func(ext string) bool {
-		return strings.HasSuffix(output, ext)
-	}
-
-	var z Archiver
-	switch {
-	case hasExt(".zip"):
-		fmt.Println("zip format")
-		z, err = CreateZip(output)
-	case hasExt(".tar"):
-		fmt.Println("tar format")
-		z, err = CreateTar(output)
-	default:
-		fmt.Println("unsupport file archive format")
-		os.Exit(1)
-	}
-	if err != nil {
-		return
-	}
 	log.Debug("archive files")
 	for _, file := range files {
 		if err = z.Add(file); err != nil {
 			return
 		}
 	}
-	log.Info("finish write zip file")
+	log.Info("finish archive file")
 	err = z.Close()
 }
