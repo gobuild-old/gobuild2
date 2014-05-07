@@ -16,7 +16,12 @@ import (
 	"github.com/unknwon/com"
 )
 
-func findFiles(path string, depth int, focuses, skips []*regexp.Regexp) ([]string, error) {
+func init() {
+	log.SetFlags(log.Linfo)
+	log.SetOutputLevel(log.Ldebug)
+}
+
+func findFiles(path string, depth int, skips []*regexp.Regexp) ([]string, error) {
 	baseNumSeps := strings.Count(path, string(os.PathSeparator))
 	var files []string
 	err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
@@ -26,14 +31,8 @@ func findFiles(path string, depth int, focuses, skips []*regexp.Regexp) ([]strin
 				return filepath.SkipDir
 			}
 		}
-		name := path //info.Name()
-		isSkip := true
-		for _, focus := range focuses {
-			if focus.MatchString(name) {
-				isSkip = false
-				break
-			}
-		}
+		name := info.Name()
+		isSkip := false
 		for _, skip := range skips {
 			if skip.MatchString(name) {
 				isSkip = true
@@ -43,23 +42,13 @@ func findFiles(path string, depth int, focuses, skips []*regexp.Regexp) ([]strin
 		// log.Println(isSkip, name)
 		if !isSkip {
 			files = append(files, path)
-			log.Debug("add file:", name, path)
+			log.Info("add file:", name, path)
 		}
 		return nil
 	})
 	return files, err
 }
 
-func init() {
-	log.SetOutputLevel(log.Ldebug)
-}
-
-/*
-package a program
-download source
-parse yaml
-build binary
-*/
 func Action(c *cli.Context) {
 	var goos, goarch = c.String("os"), c.String("arch")
 	var depth = c.Int("depth")
@@ -88,20 +77,21 @@ func Action(c *cli.Context) {
 	} else {
 		pcfg = config.DefaultPcfg
 	}
-	log.Println("config:", pcfg)
-	var focuses, skips []*regexp.Regexp
-	for _, str := range pcfg.Filesets.Includes {
-		focuses = append(focuses, regexp.MustCompile(str))
-	}
+	log.Debug("config:", pcfg)
+
+	var skips []*regexp.Regexp
 	for _, str := range pcfg.Filesets.Excludes {
-		skips = append(skips, regexp.MustCompile(str))
+		skips = append(skips, regexp.MustCompile("^"+str+"$"))
 	}
 
-	files, err := findFiles(".", depth, focuses, skips)
-	if err != nil {
-		return
+	var files []string
+	for _, filename := range pcfg.Filesets.Includes {
+		fs, err := findFiles(filename, depth, skips)
+		if err != nil {
+			return
+		}
+		files = append(files, fs...)
 	}
-	log.Info("files:", files)
 
 	// build source
 	if err = sess.Command("go", "build").Run(); err != nil {
@@ -130,12 +120,12 @@ func Action(c *cli.Context) {
 	if err != nil {
 		return
 	}
-	log.Debug("add files")
+	log.Debug("archive files")
 	for _, file := range files {
 		if err = z.Add(file); err != nil {
 			return
 		}
 	}
-	log.Debug("finish write zip file")
+	log.Info("finish write zip file")
 	err = z.Close()
 }

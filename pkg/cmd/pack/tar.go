@@ -47,6 +47,8 @@ func (t *Tar) Add(filename string) error {
 	if err = t.WriteHeader(hdr); err != nil {
 		return fmt.Errorf("header: %v", err)
 	}
-	_, err = io.Copy(t, rdc)
+	if info.Mode().IsRegular() {
+		_, err = io.Copy(t, rdc)
+	}
 	return err
 }
