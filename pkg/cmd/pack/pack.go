@@ -53,6 +53,8 @@ func Action(c *cli.Context) {
 	var goos, goarch = c.String("os"), c.String("arch")
 	var depth = c.Int("depth")
 	var output = c.String("output")
+	var gom = c.String("gom")
+
 	var err error
 	defer func() {
 		if err != nil {
@@ -117,7 +119,7 @@ func Action(c *cli.Context) {
 	}
 
 	// build source
-	if err = sess.Command("go", "build").Run(); err != nil {
+	if err = sess.Command(gom, "build").Run(); err != nil {
 		return
 	}
 	cwd, _ := os.Getwd()

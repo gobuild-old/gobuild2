@@ -41,8 +41,10 @@ func Action(c *cli.Context) {
 	}
 	cfg := config.Config
 	m := newMartini()
+
 	m.Get("/ruok", routers.Ruok)
 	m.Any("/", routers.Home)
+
 	listenAddr := fmt.Sprintf("%s:%d",
 		cfg.Server.Addr,
 		cfg.Server.Port)

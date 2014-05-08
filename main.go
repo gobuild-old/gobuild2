@@ -7,14 +7,11 @@ import (
 
 	"github.com/codegangsta/cli"
 	"github.com/gobuild/gobuild2/pkg/cmd/pack"
+	"github.com/gobuild/gobuild2/pkg/cmd/slave"
 	"github.com/gobuild/gobuild2/pkg/cmd/web"
 )
 
-const VERSION = "0.0.1"
-
-func runSlave(c *cli.Context) {
-	println("slave")
-}
+const VERSION = "0.0.1.0508"
 
 var app = cli.NewApp()
 
@@ -29,7 +26,7 @@ func init() {
 		cli.Command{
 			Name:   "slave",
 			Usage:  "start gobuild compile slave",
-			Action: runSlave,
+			Action: slave.Action,
 		},
 		cli.Command{
 			Name:   "init",
@@ -45,6 +42,7 @@ func init() {
 				cli.StringFlag{"arch", runtime.GOARCH, "arch"},
 				cli.StringFlag{"depth", "3", "depth of file to walk"},
 				cli.StringFlag{"output,o", program + ".zip", "target file"},
+				cli.StringFlag{"gom", "go", "go package manage program"},
 			},
 		},
 		cli.Command{
