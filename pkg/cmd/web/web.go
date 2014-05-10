@@ -44,7 +44,7 @@ func Action(c *cli.Context) {
 
 	m.Get("/ruok", routers.Ruok)
 	m.Any("/", routers.Home)
-
+	routers.HandleRpc()
 	listenAddr := fmt.Sprintf("%s:%d",
 		cfg.Server.Addr,
 		cfg.Server.Port)

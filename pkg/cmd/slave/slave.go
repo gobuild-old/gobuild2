@@ -8,6 +8,7 @@ import (
 
 	"github.com/codegangsta/cli"
 	"github.com/codeskyblue/go-sh"
+	"github.com/gobuild/gobuild2/routers"
 	"github.com/qiniu/log"
 )
 
@@ -23,9 +24,15 @@ func sanitizedRepoName(repo string) string {
 
 func Action(c *cli.Context) {
 	fmt.Println("this is slave daemon")
+
 	var TMPDIR = "./tmp"
 	var err error
 	TMPDIR, err = filepath.Abs(TMPDIR)
+
+	args := &routers.Args{CgoEnabled: true}
+	reply, err := routers.GetMission("localhost:8000", args)
+	log.Infof("reply: %v", reply)
+
 	if err != nil {
 		log.Errorf("tmpdir to abspath err: %v", err)
 		return
