@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/codegangsta/cli"
 	"github.com/codeskyblue/go-sh"
@@ -23,29 +24,17 @@ func sanitizedRepoName(repo string) string {
 	return repo
 }
 
-func Action(c *cli.Context) {
-	fmt.Println("this is slave daemon")
+var TMPDIR = "./tmp"
 
-	var TMPDIR = "./tmp"
-	var err error
-	TMPDIR, err = filepath.Abs(TMPDIR)
-
-	args := &routers.Args{Os: runtime.GOOS, Arch: runtime.GOARCH}
-	reply, err := routers.GetMission("localhost:8010", args)
-	log.Infof("reply: %v", reply)
-
-	if err != nil {
-		log.Errorf("tmpdir to abspath err: %v", err)
-		return
-	}
-	if !sh.Test("dir", TMPDIR) {
-		os.MkdirAll(TMPDIR, 0755)
-	}
+func work(m *Mission) {
 	sess := sh.NewSession()
 	sess.SetEnv("GOPATH", TMPDIR)
 
-	var repoAddr = "github.com/shxsun/fswatch"
+	var err error
+	var repoAddr = m.Repo
 	var cleanName = sanitizedRepoName(repoAddr)
+
+	//var repoAddr = "github.com/codeskyblue/fswatch"
 	var srcPath = filepath.Join(TMPDIR, "src", cleanName)
 	_ = srcPath
 	// os.MkdirAll(srcPath, 0755)
@@ -54,10 +43,45 @@ func Action(c *cli.Context) {
 		log.Error(err)
 		return
 	}
+	// TODO: change to right branch
 	var PROGRAM, _ = filepath.Abs(os.Args[0])
 	fmt.Println(PROGRAM)
 	err = sess.Command(PROGRAM, "pack", "-o", "output.tar.gz", "-gom", "gopm", sh.Dir(srcPath)).Run()
 	if err != nil {
 		log.Error(err)
+	}
+}
+
+func Action(c *cli.Context) {
+	fmt.Println("this is slave daemon")
+
+	var err error
+	TMPDIR, err = filepath.Abs(TMPDIR)
+
+	if err != nil {
+		log.Errorf("tmpdir to abspath err: %v", err)
+		return
+	}
+	if !sh.Test("dir", TMPDIR) {
+		os.MkdirAll(TMPDIR, 0755)
+	}
+	hostname, err := os.Hostname()
+	if err != nil {
+		log.Fatalf("hostname retrive err: %v", err)
+	}
+	args := &routers.Args{Os: runtime.GOOS, Arch: runtime.GOARCH, Host: hostname}
+	for {
+		reply, err := routers.GetMission("localhost:8010", args)
+		if err != nil {
+			log.Errorf("call server rpc error: %v", err)
+			time.Sleep(2 * time.Second)
+			continue
+		}
+		log.Infof("reply: %v", reply)
+		if reply.Idle != 0 {
+			log.Infof("Idle for next reply: %v", reply.Idle)
+			time.Sleep(reply.Idle)
+		}
+		missionQueue <- Mission{Repo: reply.Repo, Branch: reply.Branch, Cgo: reply.Cgo}
 	}
 }

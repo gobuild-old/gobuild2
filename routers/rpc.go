@@ -2,12 +2,12 @@ package routers
 
 import (
 	"net/rpc"
+	"time"
 
 	"github.com/qiniu/log"
 )
 
-type Rpc struct {
-}
+type Rpc struct{}
 
 type Args struct {
 	Os, Arch string
@@ -15,9 +15,10 @@ type Args struct {
 }
 
 type Reply struct {
-	OK     bool
+	Idle   time.Duration
 	Repo   string
 	Branch string
+	Cgo    bool
 }
 
 func (r *Rpc) NewMission(args *Args, rep *Reply) error {
