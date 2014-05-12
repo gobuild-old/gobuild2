@@ -42,12 +42,14 @@ func Action(c *cli.Context) {
 	cfg := config.Config
 	m := newMartini()
 
+	routers.HandleRpc()
 	m.Get("/ruok", routers.Ruok)
 	m.Any("/", routers.Home)
-	routers.HandleRpc()
+	http.Handle("/", m)
+
 	listenAddr := fmt.Sprintf("%s:%d",
 		cfg.Server.Addr,
 		cfg.Server.Port)
 	log.Printf("listen %s\n", strconv.Quote(listenAddr))
-	log.Fatal(http.ListenAndServe(listenAddr, m))
+	log.Fatal(http.ListenAndServe(listenAddr, nil))
 }

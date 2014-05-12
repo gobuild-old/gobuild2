@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/codegangsta/cli"
@@ -29,8 +30,8 @@ func Action(c *cli.Context) {
 	var err error
 	TMPDIR, err = filepath.Abs(TMPDIR)
 
-	args := &routers.Args{CgoEnabled: true}
-	reply, err := routers.GetMission("localhost:8000", args)
+	args := &routers.Args{Os: runtime.GOOS, Arch: runtime.GOARCH}
+	reply, err := routers.GetMission("localhost:8010", args)
 	log.Infof("reply: %v", reply)
 
 	if err != nil {

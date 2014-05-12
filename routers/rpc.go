@@ -1,18 +1,17 @@
 package routers
 
 import (
-	"net"
-	"net/http"
 	"net/rpc"
 
 	"github.com/qiniu/log"
 )
 
-type GoRpc struct {
+type Rpc struct {
 }
 
 type Args struct {
-	CgoEnabled bool
+	Os, Arch string
+	Host     string
 }
 
 type Reply struct {
@@ -21,8 +20,9 @@ type Reply struct {
 	Branch string
 }
 
-func (r *GoRpc) NewMission(args *Args, rep *Reply) error {
-	log.Infof("cgo_enabled: %v", args.CgoEnabled)
+func (r *Rpc) NewMission(args *Args, rep *Reply) error {
+	log.Infof("arch: %v", args.Arch)
+	log.Infof("host: %v", args.Host)
 	rep.Branch = "master"
 	rep.Repo = "github.com/codeskyblue/fswatch"
 	return nil
@@ -34,18 +34,12 @@ func GetMission(addr string, args *Args) (*Reply, error) {
 		return nil, err
 	}
 	reply := &Reply{}
-	err = client.Call("GoRpc.NewMission", args, reply)
+	err = client.Call("Rpc.NewMission", args, reply)
 	return reply, err
 }
 
 func HandleRpc() {
-	gr := new(GoRpc)
+	gr := new(Rpc)
 	rpc.Register(gr)
 	rpc.HandleHTTP()
-
-	l, e := net.Listen("tcp", ":8000")
-	if e != nil {
-		log.Fatal("listen error:", e)
-	}
-	http.Serve(l, nil)
 }
