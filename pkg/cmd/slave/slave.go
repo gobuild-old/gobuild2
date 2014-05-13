@@ -10,7 +10,7 @@ import (
 
 	"github.com/codegangsta/cli"
 	"github.com/codeskyblue/go-sh"
-	"github.com/gobuild/gobuild2/routers"
+	"github.com/gobuild/gobuild2/pkg/xrpc"
 	"github.com/qiniu/log"
 )
 
@@ -25,31 +25,38 @@ func sanitizedRepoName(repo string) string {
 }
 
 var TMPDIR = "./tmp"
+var PROGRAM, _ = filepath.Abs(os.Args[0])
 
-func work(m *Mission) {
+func work(m *Mission) (err error) {
 	sess := sh.NewSession()
-	sess.SetEnv("GOPATH", TMPDIR)
+	var gopath, _ = filepath.Abs(TMPDIR)
+	sess.SetEnv("GOPATH", gopath)
 
-	var err error
 	var repoAddr = m.Repo
 	var cleanName = sanitizedRepoName(repoAddr)
 
-	//var repoAddr = "github.com/codeskyblue/fswatch"
-	var srcPath = filepath.Join(TMPDIR, "src", cleanName)
-	_ = srcPath
-	// os.MkdirAll(srcPath, 0755)
-	err = sess.Command("gopm", "get", "-v", repoAddr).Run() //, sh.Dir(filepath.Dir(srcPath))).Run()
+	var srcPath = filepath.Join(gopath, "src", cleanName)
+	err = sess.Command("gopm", "get", "-v", repoAddr).Run()
 	if err != nil {
 		log.Error(err)
 		return
 	}
 	// TODO: change to right branch
-	var PROGRAM, _ = filepath.Abs(os.Args[0])
-	fmt.Println(PROGRAM)
-	err = sess.Command(PROGRAM, "pack", "-o", "output.tar.gz", "-gom", "gopm", sh.Dir(srcPath)).Run()
+	var outFile = "output.tar.gz"
+	err = sess.Command(PROGRAM, "pack", "-o", outFile, "-gom", "gopm", sh.Dir(srcPath)).Run()
 	if err != nil {
 		log.Error(err)
+		return
 	}
+	checkError := func(err error) {
+		if err != nil {
+			log.Errorf("err: %v", err)
+		}
+	}
+	err = xrpc.UpdateStatus(&xrpc.Args{Mid: 1, Status: xrpc.ST_PUBLISHING})
+	checkError(err)
+
+	return nil
 }
 
 func Action(c *cli.Context) {
@@ -69,9 +76,10 @@ func Action(c *cli.Context) {
 	if err != nil {
 		log.Fatalf("hostname retrive err: %v", err)
 	}
-	args := &routers.Args{Os: runtime.GOOS, Arch: runtime.GOARCH, Host: hostname}
+	args := &xrpc.Args{Os: runtime.GOOS, Arch: runtime.GOARCH, Host: hostname}
+	xrpc.DefaultServer = "localhost:8010"
 	for {
-		reply, err := routers.GetMission("localhost:8010", args)
+		reply, err := xrpc.GetMission(args)
 		if err != nil {
 			log.Errorf("call server rpc error: %v", err)
 			time.Sleep(2 * time.Second)

@@ -7,6 +7,7 @@ import (
 
 	"github.com/gobuild/gobuild2/models"
 	"github.com/gobuild/gobuild2/pkg/config"
+	"github.com/gobuild/gobuild2/pkg/xrpc"
 	"github.com/gobuild/gobuild2/routers"
 	"github.com/gobuild/log"
 
@@ -42,7 +43,7 @@ func Action(c *cli.Context) {
 	cfg := config.Config
 	m := newMartini()
 
-	routers.HandleRpc()
+	xrpc.HandleRpc()
 	m.Get("/ruok", routers.Ruok)
 	m.Any("/", routers.Home)
 	http.Handle("/", m)
