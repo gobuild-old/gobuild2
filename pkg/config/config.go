@@ -22,6 +22,11 @@ var Config struct {
 		Password string `gcfg:"PASSWD"`
 		SslMode  string `gcfg:"SSLMODE"`
 	}
+	Cdn struct {
+		AccessKey string `gcfg:"ACCESSKEY"`
+		SecretKey string `gcfg":SECRETKEY"`
+		Bulket    string `gcfg:"BULKET"`
+	}
 	Social map[string]*struct {
 		ClientId     string `gcfg:"ID"`
 		ClientSecret string `gcfg:"SECRET"`

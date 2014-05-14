@@ -4,15 +4,11 @@ import (
 	"fmt"
 	"runtime"
 	"time"
+
+	"github.com/gobuild/gobuild2/pkg/xrpc"
 )
 
-type Mission struct {
-	Repo   string
-	Branch string
-	Cgo    bool
-}
-
-var missionQueue = make(chan Mission)
+var missionQueue = make(chan *xrpc.Mission)
 
 func init() {
 	n := runtime.NumCPU()
@@ -22,7 +18,7 @@ func init() {
 			for {
 				var mission = <-missionQueue
 				fmt.Println(mission)
-				work(&mission)
+				work(mission)
 				time.Sleep(time.Second)
 			}
 		}()

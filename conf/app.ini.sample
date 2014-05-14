@@ -16,3 +16,8 @@ ID =
 SECRET = 
 AUTHURL  =
 TOKENURL =
+
+[cdn]
+ACCESSKEY = 
+SECRETKEY = 
+BULKET = 

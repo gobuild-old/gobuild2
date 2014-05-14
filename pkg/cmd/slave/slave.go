@@ -14,7 +14,7 @@ import (
 	"github.com/qiniu/log"
 )
 
-func sanitizedRepoName(repo string) string {
+func sanitizedRepoPath(repo string) string {
 	if strings.HasSuffix(repo, ".git") {
 		repo = repo[:len(repo)-4]
 	}
@@ -24,47 +24,82 @@ func sanitizedRepoName(repo string) string {
 	return repo
 }
 
-var TMPDIR = "./tmp"
-var PROGRAM, _ = filepath.Abs(os.Args[0])
+var (
+	TMPDIR     = "./tmp"
+	PROGRAM, _ = filepath.Abs(os.Args[0])
+	HOSTNAME   = "localhost"
+	HOSTINFO   = &xrpc.HostInfo{Os: runtime.GOOS, Arch: runtime.GOARCH, Host: HOSTNAME}
+)
 
-func work(m *Mission) (err error) {
+func checkError(err error) {
+	if err != nil {
+		log.Errorf("err: %v", err)
+	}
+}
+
+func work(m *xrpc.Mission) (err error) {
+	notify := func(status string, extra ...string) {
+		mstatus := &xrpc.MissionStatus{Mid: m.Mid, Status: status, Extra: strings.Join(extra, "")}
+		ok := false
+		err := xrpc.Call("UpdateMissionStatus", mstatus, &ok)
+		checkError(err)
+	}
+	defer func() {
+		if err != nil {
+			notify(xrpc.ST_ERROR)
+		}
+	}()
 	sess := sh.NewSession()
 	var gopath, _ = filepath.Abs(TMPDIR)
 	sess.SetEnv("GOPATH", gopath)
 
 	var repoAddr = m.Repo
-	var cleanName = sanitizedRepoName(repoAddr)
+	var cleanRepoName = sanitizedRepoPath(repoAddr)
 
-	var srcPath = filepath.Join(gopath, "src", cleanName)
+	notify(xrpc.ST_RETRIVING)
+	var srcPath = filepath.Join(gopath, "src", cleanRepoName)
 	err = sess.Command("gopm", "get", "-v", repoAddr).Run()
 	if err != nil {
 		log.Error(err)
 		return
 	}
 	// TODO: change to right branch
-	var outFile = "output.tar.gz"
+	var outFile = fmt.Sprintf("%s-%s.%s", filepath.Base(cleanRepoName), m.Branch, "tar.gz")
+	var outFullPath = filepath.Join(srcPath, outFile)
+	notify(xrpc.ST_BUILDING)
 	err = sess.Command(PROGRAM, "pack", "-o", outFile, "-gom", "gopm", sh.Dir(srcPath)).Run()
 	if err != nil {
 		log.Error(err)
 		return
 	}
-	checkError := func(err error) {
-		if err != nil {
-			log.Errorf("err: %v", err)
-		}
+	notify(xrpc.ST_PUBLISHING)
+	var cdnPath = fmt.Sprintf("m%d-%s/%s", m.Mid, strings.Replace(cleanRepoName, "/", "-", -1), outFile)
+	log.Infof("cdn path: %s", cdnPath)
+	var pubAddress string
+	if pubAddress, err = UploadQiniu(outFullPath, cdnPath); err != nil {
+		checkError(err)
+		return
 	}
-	err = xrpc.UpdateStatus(&xrpc.Args{Mid: 1, Status: xrpc.ST_PUBLISHING})
-	checkError(err)
-
+	log.Debugf("publish %s to %s", outFile, pubAddress)
+	notify(xrpc.ST_DONE, pubAddress)
 	return nil
 }
 
-func Action(c *cli.Context) {
-	fmt.Println("this is slave daemon")
-
+func init() {
 	var err error
-	TMPDIR, err = filepath.Abs(TMPDIR)
+	HOSTNAME, err = os.Hostname()
+	if err != nil {
+		log.Fatalf("hostname retrive err: %v", err)
+	}
+}
 
+func prepare() (err error) {
+	qi := new(xrpc.QiniuInfo)
+	xrpc.Call("GetQiniuInfo", HOSTINFO, qi)
+
+	initQiniu(qi.AccessKey, qi.SecretKey, qi.Bulket)
+
+	TMPDIR, err = filepath.Abs(TMPDIR)
 	if err != nil {
 		log.Errorf("tmpdir to abspath err: %v", err)
 		return
@@ -72,24 +107,29 @@ func Action(c *cli.Context) {
 	if !sh.Test("dir", TMPDIR) {
 		os.MkdirAll(TMPDIR, 0755)
 	}
-	hostname, err := os.Hostname()
+	xrpc.DefaultWebAddress = "localhost:8010"
+	return nil
+}
+
+func Action(c *cli.Context) {
+	fmt.Println("this is slave daemon")
+	err := prepare()
 	if err != nil {
-		log.Fatalf("hostname retrive err: %v", err)
+		log.Fatalf("slave prepare err: %v", err)
 	}
-	args := &xrpc.Args{Os: runtime.GOOS, Arch: runtime.GOARCH, Host: hostname}
-	xrpc.DefaultServer = "localhost:8010"
 	for {
-		reply, err := xrpc.GetMission(args)
-		if err != nil {
-			log.Errorf("call server rpc error: %v", err)
+		mission := &xrpc.Mission{}
+		if err := xrpc.Call("GetMission", HOSTINFO, mission); err != nil {
+			log.Errorf("get mission failed: %v", err)
 			time.Sleep(2 * time.Second)
 			continue
 		}
-		log.Infof("reply: %v", reply)
-		if reply.Idle != 0 {
-			log.Infof("Idle for next reply: %v", reply.Idle)
-			time.Sleep(reply.Idle)
+
+		log.Infof("reply: %v", mission)
+		if mission.Idle != 0 {
+			log.Infof("Idle for next reply: %v", mission.Idle)
+			time.Sleep(mission.Idle)
 		}
-		missionQueue <- Mission{Repo: reply.Repo, Branch: reply.Branch, Cgo: reply.Cgo}
+		missionQueue <- mission //Mission{Repo: reply.Repo, Branch: reply.Branch, Cgo: reply.Cgo}
 	}
 }

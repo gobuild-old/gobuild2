@@ -8,7 +8,7 @@
         "\\.go$"
     ],
     "command": [
-        "bash", "-c", "go build && ./gobuild2 web"
+        "bash", "-c", "sh build.sh && ./gobuild2 web"
     ],
     "env": {
         "POWERD_BY": "github.com/shxsun/fswatch"
