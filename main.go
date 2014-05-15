@@ -7,6 +7,7 @@ import (
 
 	"github.com/codegangsta/cli"
 	"github.com/gobuild/gobuild2/pkg/cmd/pack"
+	"github.com/gobuild/gobuild2/pkg/cmd/runinit"
 	"github.com/gobuild/gobuild2/pkg/cmd/slave"
 	"github.com/gobuild/gobuild2/pkg/cmd/web"
 )
@@ -27,11 +28,14 @@ func init() {
 			Name:   "slave",
 			Usage:  "start gobuild compile slave",
 			Action: slave.Action,
+			Flags: []cli.Flag{
+				cli.StringFlag{"webaddr,w", "localhost:8010", "gobuild2 web address"},
+			},
 		},
 		cli.Command{
 			Name:   "init",
 			Usage:  "initial gobuild.yml file",
-			Action: runInit,
+			Action: runinit.Action,
 		},
 		cli.Command{
 			Name:   "pack",

@@ -107,14 +107,15 @@ func prepare() (err error) {
 	if !sh.Test("dir", TMPDIR) {
 		os.MkdirAll(TMPDIR, 0755)
 	}
-	xrpc.DefaultWebAddress = "localhost:8010"
 	return nil
 }
 
 func Action(c *cli.Context) {
 	fmt.Println("this is slave daemon")
-	err := prepare()
-	if err != nil {
+	webaddr := c.String("webaddr")
+	xrpc.DefaultWebAddress = webaddr
+
+	if err := prepare(); err != nil {
 		log.Fatalf("slave prepare err: %v", err)
 	}
 	for {

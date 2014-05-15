@@ -1,9 +1,9 @@
 filesets:
   includes:
   - README.md
-  - templates
-  - public
-  - conf
+  - LICENSE
   excludes:
   - .*.go
-  - .*.svn
+settings:
+  goflags: ""
+  yaml"cgoenable": true
