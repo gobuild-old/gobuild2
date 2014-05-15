@@ -12,15 +12,6 @@ var DefaultWebAddress = "localhost:8010"
 
 type Rpc struct{}
 
-const (
-	ST_PENDING    = "pending"
-	ST_RETRIVING  = "retriving"
-	ST_BUILDING   = "building"
-	ST_PUBLISHING = "publishing"
-	ST_DONE       = "done"
-	ST_ERROR      = "error"
-)
-
 type HostInfo struct {
 	Os, Arch string
 	Host     string
@@ -39,11 +30,12 @@ type MissionStatus struct {
 }
 
 type Mission struct {
-	Idle   time.Duration
-	Mid    int64
-	Repo   string
-	Branch string
-	Cgo    bool
+	Idle      time.Duration
+	Mid       int64
+	Repo      string
+	Branch    string
+	CgoEnable bool
+	Os, Arch  string
 }
 
 func (r *Rpc) GetQiniuInfo(args *HostInfo, rep *QiniuInfo) error {
@@ -64,13 +56,37 @@ func Call(method string, args interface{}, reply interface{}) error {
 	return client.Call("Rpc."+method, args, reply)
 }
 
+var missionQueue = make(chan *Mission, 1)
+
+func init() {
+	go func() {
+		for {
+			missionQueue <- &Mission{Repo: "github.com/wangwenbin/2048-go", Branch: "master", Mid: 2,
+				CgoEnable: true, Os: "windows", Arch: "386"}
+			time.Sleep(5 * time.Second)
+		}
+	}()
+}
 func (r *Rpc) GetMission(args *HostInfo, rep *Mission) error {
 	log.Infof("arch: %v", args.Arch)
 	log.Infof("host: %v", args.Host)
-	rep.Branch = "master"
-	rep.Repo = "github.com/codeskyblue/fswatch"
-	rep.Mid = 1 // need to insert into mysql
-	return nil
+	select {
+	case <-time.After(time.Second):
+		rep.Idle = time.Second
+		return nil
+	case mission := <-missionQueue:
+		*rep = *mission
+		// rep.Repo = mission.Repo
+		// rep.Mid = mission.Mid
+		// rep.Branch = mission.Branch
+		// rep.CgoEnable = mission.CgoEnable
+		// *rep = *mission
+		return nil
+	}
+	// rep.Branch = "master"
+	// rep.Repo = "github.com/codeskyblue/fswatch"
+	// rep.Mid = 1 // need to insert into mysql
+	// return nil
 }
 
 func (r *Rpc) UpdateMissionStatus(args *MissionStatus, reply *bool) error {

@@ -48,6 +48,8 @@ func Action(c *cli.Context) {
 	m.Any("/", routers.Home)
 	http.Handle("/", m)
 
+	go drainTask()
+
 	listenAddr := fmt.Sprintf("%s:%d",
 		cfg.Server.Addr,
 		cfg.Server.Port)

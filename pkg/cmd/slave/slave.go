@@ -10,6 +10,7 @@ import (
 
 	"github.com/codegangsta/cli"
 	"github.com/codeskyblue/go-sh"
+	"github.com/gobuild/gobuild2/models"
 	"github.com/gobuild/gobuild2/pkg/xrpc"
 	"github.com/qiniu/log"
 )
@@ -46,17 +47,18 @@ func work(m *xrpc.Mission) (err error) {
 	}
 	defer func() {
 		if err != nil {
-			notify(xrpc.ST_ERROR)
+			notify(models.ST_ERROR)
 		}
 	}()
 	sess := sh.NewSession()
+	sess.ShowCMD = true
 	var gopath, _ = filepath.Abs(TMPDIR)
 	sess.SetEnv("GOPATH", gopath)
 
 	var repoAddr = m.Repo
 	var cleanRepoName = sanitizedRepoPath(repoAddr)
 
-	notify(xrpc.ST_RETRIVING)
+	notify(models.ST_RETRIVING)
 	var srcPath = filepath.Join(gopath, "src", cleanRepoName)
 	err = sess.Command("gopm", "get", "-v", repoAddr).Run()
 	if err != nil {
@@ -66,14 +68,19 @@ func work(m *xrpc.Mission) (err error) {
 	// TODO: change to right branch
 	var outFile = fmt.Sprintf("%s-%s.%s", filepath.Base(cleanRepoName), m.Branch, "tar.gz")
 	var outFullPath = filepath.Join(srcPath, outFile)
-	notify(xrpc.ST_BUILDING)
+	notify(models.ST_BUILDING)
+	if m.CgoEnable {
+		sess.SetEnv("CGO_ENABLE", "true")
+		sess.SetEnv("GOOS", m.Os)
+		sess.SetEnv("GOARCH", m.Arch)
+	}
 	err = sess.Command(PROGRAM, "pack", "-o", outFile, "-gom", "gopm", sh.Dir(srcPath)).Run()
 	if err != nil {
 		log.Error(err)
 		return
 	}
-	notify(xrpc.ST_PUBLISHING)
-	var cdnPath = fmt.Sprintf("m%d-%s/%s", m.Mid, strings.Replace(cleanRepoName, "/", "-", -1), outFile)
+	notify(models.ST_PUBLISHING)
+	var cdnPath = fmt.Sprintf("m%d/%s/%s", m.Mid, cleanRepoName, outFile) //strings.Replace(cleanRepoName, "/", "-", -1), outFile)
 	log.Infof("cdn path: %s", cdnPath)
 	var pubAddress string
 	if pubAddress, err = UploadQiniu(outFullPath, cdnPath); err != nil {
@@ -81,7 +88,7 @@ func work(m *xrpc.Mission) (err error) {
 		return
 	}
 	log.Debugf("publish %s to %s", outFile, pubAddress)
-	notify(xrpc.ST_DONE, pubAddress)
+	notify(models.ST_DONE, pubAddress)
 	return nil
 }
 
@@ -107,6 +114,7 @@ func prepare() (err error) {
 	if !sh.Test("dir", TMPDIR) {
 		os.MkdirAll(TMPDIR, 0755)
 	}
+	startWork()
 	return nil
 }
 
@@ -130,6 +138,7 @@ func Action(c *cli.Context) {
 		if mission.Idle != 0 {
 			log.Infof("Idle for next reply: %v", mission.Idle)
 			time.Sleep(mission.Idle)
+			continue
 		}
 		missionQueue <- mission //Mission{Repo: reply.Repo, Branch: reply.Branch, Cgo: reply.Cgo}
 	}

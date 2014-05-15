@@ -10,7 +10,7 @@ import (
 
 var missionQueue = make(chan *xrpc.Mission)
 
-func init() {
+func startWork() {
 	n := runtime.NumCPU()
 	n = 1
 	for i := 0; i < n; i++ {

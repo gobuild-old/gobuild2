@@ -25,6 +25,10 @@ func findFiles(path string, depth int, skips []*regexp.Regexp) ([]string, error)
 	baseNumSeps := strings.Count(path, string(os.PathSeparator))
 	var files []string
 	err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			log.Warnf("filewalk: %s", err)
+			return nil
+		}
 		if info.IsDir() {
 			pathDepth := strings.Count(path, string(os.PathSeparator)) - baseNumSeps
 			if pathDepth > depth {
