@@ -47,7 +47,7 @@ func work(m *xrpc.Mission) (err error) {
 	}
 	defer func() {
 		if err != nil {
-			notify(models.ST_ERROR)
+			notify(models.ST_ERROR, err.Error())
 		}
 	}()
 	sess := sh.NewSession()
@@ -80,7 +80,7 @@ func work(m *xrpc.Mission) (err error) {
 		return
 	}
 	notify(models.ST_PUBLISHING)
-	var cdnPath = fmt.Sprintf("m%d/%s/%s", m.Mid, cleanRepoName, outFile) //strings.Replace(cleanRepoName, "/", "-", -1), outFile)
+	var cdnPath = fmt.Sprintf("m%d-%s/%s/%s", m.Mid, time.Now().Format("20060102-150405"), cleanRepoName, outFile) //strings.Replace(cleanRepoName, "/", "-", -1), outFile)
 	log.Infof("cdn path: %s", cdnPath)
 	var pubAddress string
 	if pubAddress, err = UploadQiniu(outFullPath, cdnPath); err != nil {

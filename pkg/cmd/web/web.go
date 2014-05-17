@@ -48,6 +48,9 @@ func Action(c *cli.Context) {
 	m.Any("/", routers.Home)
 	http.Handle("/", m)
 
+	if err = models.ResetAllTaskStatus(); err != nil {
+		log.Fatalf("reset all task status: %v", err)
+	}
 	go drainTask()
 
 	listenAddr := fmt.Sprintf("%s:%d",

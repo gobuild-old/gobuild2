@@ -38,13 +38,14 @@ type DownloadHistory struct {
 }
 
 type Task struct {
-	Id        int64
-	Rid       int64
-	Repo      *Repository `xorm:"-"`
-	Branch    string      // can also be tag, commit_id
-	Os        string
-	Arch      string
-	CgoEnable bool
+	Id           int64
+	Rid          int64
+	Repo         *Repository `xorm:"-"`
+	Branch       string      // can also be tag, commit_id
+	Os           string
+	Arch         string
+	CgoEnable    bool
+	ArchieveAddr string
 
 	Status  string
 	Created time.Time `xorm:"created"`
@@ -95,30 +96,43 @@ func GetTaskById(tid int64) (*Task, error) {
 	if !has {
 		return nil, ErrTaskNotExists
 	}
-	return t, nil
+	t.Repo, err = GetRepositoryById(t.Rid)
+	return t, err
 }
 
 func ResetAllTaskStatus() error {
-	_, err := orm.Where("status != ?", ST_DONE).Update(&Task{Status: ST_READY})
+	_, err := orm.Where("status != ? and status != ?", ST_DONE, ST_ERROR).Update(&Task{Status: ST_READY})
 	return err
 }
 
-func UpdateTaskStatus(tid int64, status string) error {
-	_, err := orm.Id(tid).Update(&Task{Status: status})
+func UpdateTaskStatus(tid int64, status string, extra string) error {
+	_, err := orm.Id(tid).Update(&Task{Status: status, ArchieveAddr: extra})
 	return err
 }
 
-func GetAvaliableTask(cgo bool, os, arch string) (*Task, error) {
-	task := &Task{Status: ST_READY}
-	if cgo == false {
-		task.Os = os
-		task.Arch = arch
-	}
-	exists, err := orm.Get(task)
+func GetAvaliableTask(os, arch string) (task *Task, err error) {
+	task = &Task{Status: ST_READY, CgoEnable: false}
+	defer func() {
+		if task != nil && task.Id != 0 {
+			task, err = GetTaskById(task.Id)
+		}
+	}()
+	exists, err := orm.UseBool().Asc("created").Get(task)
 	if err != nil {
 		return nil, err
 	}
 	if !exists {
+		task.CgoEnable = true
+		if exists, err := orm.Asc("created").Get(task); err == nil && exists {
+			return task, nil
+		}
+		return nil, ErrTaskNotAvaliable
+	}
+	affec, err := orm.Id(task.Id).Update(&Task{Status: ST_PENDING})
+	if err != nil {
+		return nil, err
+	}
+	if affec == 0 { // task already taken away by another process
 		return nil, ErrTaskNotAvaliable
 	}
 	return task, nil

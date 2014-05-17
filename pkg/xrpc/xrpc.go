@@ -4,6 +4,7 @@ import (
 	"net/rpc"
 	"time"
 
+	"github.com/gobuild/gobuild2/models"
 	"github.com/gobuild/gobuild2/pkg/config"
 	"github.com/qiniu/log"
 )
@@ -67,32 +68,31 @@ func init() {
 		}
 	}()
 }
+
 func (r *Rpc) GetMission(args *HostInfo, rep *Mission) error {
 	log.Infof("arch: %v", args.Arch)
 	log.Infof("host: %v", args.Host)
-	select {
-	case <-time.After(time.Second):
+	task, err := models.GetAvaliableTask(args.Os, args.Arch)
+	switch err {
+	case nil:
+		rep.CgoEnable = task.CgoEnable
+		rep.Mid = task.Id
+		rep.Repo = task.Repo.Uri
+		rep.Branch = task.Branch
+		return nil
+	case models.ErrTaskNotAvaliable:
 		rep.Idle = time.Second
 		return nil
-	case mission := <-missionQueue:
-		*rep = *mission
-		// rep.Repo = mission.Repo
-		// rep.Mid = mission.Mid
-		// rep.Branch = mission.Branch
-		// rep.CgoEnable = mission.CgoEnable
-		// *rep = *mission
-		return nil
+	default:
+		return err
 	}
-	// rep.Branch = "master"
-	// rep.Repo = "github.com/codeskyblue/fswatch"
-	// rep.Mid = 1 // need to insert into mysql
-	// return nil
 }
 
 func (r *Rpc) UpdateMissionStatus(args *MissionStatus, reply *bool) error {
 	log.Infof("update status: mid(%d) status(%s) extra(%s)", args.Mid, args.Status, args.Extra)
 	*reply = true
-	return nil
+	err := models.UpdateTaskStatus(args.Mid, args.Status, args.Extra)
+	return err
 }
 
 func HandleRpc() {
