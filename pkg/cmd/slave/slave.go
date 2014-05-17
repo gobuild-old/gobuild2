@@ -69,11 +69,12 @@ func work(m *xrpc.Mission) (err error) {
 	var outFile = fmt.Sprintf("%s-%s.%s", filepath.Base(cleanRepoName), m.Branch, "tar.gz")
 	var outFullPath = filepath.Join(srcPath, outFile)
 	notify(models.ST_BUILDING)
+	sess.SetEnv("CGO_ENABLE", "")
 	if m.CgoEnable {
-		sess.SetEnv("CGO_ENABLE", "true")
-		sess.SetEnv("GOOS", m.Os)
-		sess.SetEnv("GOARCH", m.Arch)
+		sess.SetEnv("CGO_ENABLE", "1")
 	}
+	sess.SetEnv("GOOS", m.Os)
+	sess.SetEnv("GOARCH", m.Arch)
 	err = sess.Command(PROGRAM, "pack", "-o", outFile, "-gom", "gopm", sh.Dir(srcPath)).Run()
 	if err != nil {
 		log.Error(err)

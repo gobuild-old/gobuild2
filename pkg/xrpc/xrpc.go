@@ -76,6 +76,7 @@ func (r *Rpc) GetMission(args *HostInfo, rep *Mission) error {
 	switch err {
 	case nil:
 		rep.CgoEnable = task.CgoEnable
+		rep.Os, rep.Arch = task.Os, task.Arch
 		rep.Mid = task.Id
 		rep.Repo = task.Repo.Uri
 		rep.Branch = task.Branch

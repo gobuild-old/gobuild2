@@ -3,7 +3,6 @@ package main
 import (
 	"os"
 	"path/filepath"
-	"runtime"
 
 	"github.com/codegangsta/cli"
 	"github.com/gobuild/gobuild2/pkg/cmd/pack"
@@ -42,8 +41,8 @@ func init() {
 			Usage:  "build and pack file into tgz or zip",
 			Action: pack.Action,
 			Flags: []cli.Flag{
-				cli.StringFlag{"os", runtime.GOOS, "operation system"},
-				cli.StringFlag{"arch", runtime.GOARCH, "arch"},
+				cli.StringFlag{"os", os.Getenv("GOOS"), "operation system"},
+				cli.StringFlag{"arch", os.Getenv("GOARCH"), "arch"},
 				cli.StringFlag{"depth", "3", "depth of file to walk"},
 				cli.StringFlag{"output,o", program + ".zip", "target file"},
 				cli.StringFlag{"gom", "go", "go package manage program"},
