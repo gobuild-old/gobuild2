@@ -16,13 +16,22 @@ func initQiniu(access, secret string, bulket string) {
 	defaultBulket = bulket
 }
 
+// mimetype ref: http://webdesign.about.com/od/multimedia/a/mime-types-by-content-type.htm
 func UploadQiniu(localFile string, destName string) (addr string, err error) {
 	destName = strings.TrimLeft(destName, "/")
 	policy := rs.PutPolicy{Scope: defaultBulket + ":" + destName}
 	uptoken := policy.Token(nil)
 
 	var ret io.PutRet
-	var extra = new(io.PutExtra)
+	mimeType := ""
+	if strings.HasSuffix(destName, "tar.gz") {
+		mimeType = "application/x-tgz"
+	} else if strings.HasSuffix(destName, ".zip") {
+		mimeType = "application/zip"
+	}
+	var extra = &io.PutExtra{
+		MimeType: mimeType,
+	}
 	if err = io.PutFile(nil, &ret, uptoken, destName, localFile, extra); err != nil {
 		return
 	}

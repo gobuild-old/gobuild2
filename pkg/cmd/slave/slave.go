@@ -77,6 +77,12 @@ func work(m *xrpc.Mission) (err error) {
 		}
 		return nil
 	}
+	getsrc = func() (err error) {
+		if err = sess.Command("go", "get", "-u", "-v", repoAddr).Run(); err != nil {
+			return
+		}
+		return nil
+	}
 
 	// get source code
 	if err = getsrc(); err != nil {
@@ -85,17 +91,22 @@ func work(m *xrpc.Mission) (err error) {
 	}
 
 	// TODO: change to right branch
-	var outFile = fmt.Sprintf("%s-%s.%s", filepath.Base(cleanRepoName), m.Branch, "tar.gz")
+	extention := "tar.gz"
+	if m.Os == "windows" {
+		extention = "zip"
+	}
+	var outFile = fmt.Sprintf("%s-%s-%s-%s.%s", filepath.Base(cleanRepoName), m.Branch, m.Os, m.Arch, extention)
 	var outFullPath = filepath.Join(srcPath, outFile)
 	notify(models.ST_BUILDING)
-	err = sess.Command(PROGRAM, "pack", "-o", outFile, "-gom", "gopm", sh.Dir(srcPath)).Run()
+	// err = sess.Command(PROGRAM, "pack", "-o", outFile, "-gom", "gopm", sh.Dir(srcPath)).Run()
+	err = sess.Command(PROGRAM, "pack", "-o", outFile, sh.Dir(srcPath)).Run()
 	if err != nil {
 		log.Error(err)
 		return
 	}
 	notify(models.ST_PUBLISHING)
 	// timestamp := time.Now().Format("20060102-150405")
-	var cdnPath = fmt.Sprintf("m%d/%s/%s", m.Mid, cleanRepoName, outFile)
+	var cdnPath = fmt.Sprintf("m%d/%s/raw/%s", m.Mid, cleanRepoName, outFile)
 	log.Infof("cdn path: %s", cdnPath)
 	var pubAddress string
 	if pubAddress, err = UploadQiniu(outFullPath, cdnPath); err != nil {

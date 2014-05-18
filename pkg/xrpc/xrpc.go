@@ -57,17 +57,17 @@ func Call(method string, args interface{}, reply interface{}) error {
 	return client.Call("Rpc."+method, args, reply)
 }
 
-var missionQueue = make(chan *Mission, 1)
+// var missionQueue = make(chan *Mission, 1)
 
-func init() {
-	go func() {
-		for {
-			missionQueue <- &Mission{Repo: "github.com/wangwenbin/2048-go", Branch: "master", Mid: 2,
-				CgoEnable: true, Os: "windows", Arch: "386"}
-			time.Sleep(5 * time.Second)
-		}
-	}()
-}
+// func init() {
+// 	go func() {
+// 		for {
+// 			missionQueue <- &Mission{Repo: "github.com/wangwenbin/2048-go", Branch: "master", Mid: 2,
+// 				CgoEnable: true, Os: "windows", Arch: "386"}
+// 			time.Sleep(5 * time.Second)
+// 		}
+// 	}()
+// }
 
 func (r *Rpc) GetMission(args *HostInfo, rep *Mission) error {
 	log.Infof("arch: %v", args.Arch)
