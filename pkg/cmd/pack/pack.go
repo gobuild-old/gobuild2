@@ -128,6 +128,9 @@ func Action(c *cli.Context) {
 	}
 	cwd, _ := os.Getwd()
 	program := filepath.Base(cwd)
+	if goos == "windows" {
+		program += ".exe"
+	}
 	files = append(files, program)
 
 	log.Debug("archive files")

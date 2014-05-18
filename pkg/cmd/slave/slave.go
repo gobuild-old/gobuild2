@@ -50,38 +50,52 @@ func work(m *xrpc.Mission) (err error) {
 			notify(models.ST_ERROR, err.Error())
 		}
 	}()
+	// prepare shell session
 	sess := sh.NewSession()
 	sess.ShowCMD = true
 	var gopath, _ = filepath.Abs(TMPDIR)
 	sess.SetEnv("GOPATH", gopath)
-
-	var repoAddr = m.Repo
-	var cleanRepoName = sanitizedRepoPath(repoAddr)
-
-	notify(models.ST_RETRIVING)
-	var srcPath = filepath.Join(gopath, "src", cleanRepoName)
-	err = sess.Command("gopm", "get", "-v", repoAddr).Run()
-	if err != nil {
-		log.Error(err)
-		return
-	}
-	// TODO: change to right branch
-	var outFile = fmt.Sprintf("%s-%s.%s", filepath.Base(cleanRepoName), m.Branch, "tar.gz")
-	var outFullPath = filepath.Join(srcPath, outFile)
-	notify(models.ST_BUILDING)
 	sess.SetEnv("CGO_ENABLE", "")
 	if m.CgoEnable {
 		sess.SetEnv("CGO_ENABLE", "1")
 	}
 	sess.SetEnv("GOOS", m.Os)
 	sess.SetEnv("GOARCH", m.Arch)
+
+	var repoAddr = m.Repo
+	var cleanRepoName = sanitizedRepoPath(repoAddr)
+
+	notify(models.ST_RETRIVING)
+	var srcPath = filepath.Join(gopath, "src", cleanRepoName)
+
+	getsrc := func() (err error) {
+		if err = sess.Command("gopm", "get", "-v", "-u", repoAddr).Run(); err != nil {
+			return
+		}
+		if err = sess.Command("gopm", "get", "-v", repoAddr).Run(); err != nil {
+			return
+		}
+		return nil
+	}
+
+	// get source code
+	if err = getsrc(); err != nil {
+		log.Errorf("getsource err: %v", err)
+		return
+	}
+
+	// TODO: change to right branch
+	var outFile = fmt.Sprintf("%s-%s.%s", filepath.Base(cleanRepoName), m.Branch, "tar.gz")
+	var outFullPath = filepath.Join(srcPath, outFile)
+	notify(models.ST_BUILDING)
 	err = sess.Command(PROGRAM, "pack", "-o", outFile, "-gom", "gopm", sh.Dir(srcPath)).Run()
 	if err != nil {
 		log.Error(err)
 		return
 	}
 	notify(models.ST_PUBLISHING)
-	var cdnPath = fmt.Sprintf("m%d-%s/%s/%s", m.Mid, time.Now().Format("20060102-150405"), cleanRepoName, outFile) //strings.Replace(cleanRepoName, "/", "-", -1), outFile)
+	// timestamp := time.Now().Format("20060102-150405")
+	var cdnPath = fmt.Sprintf("m%d/%s/%s", m.Mid, cleanRepoName, outFile)
 	log.Infof("cdn path: %s", cdnPath)
 	var pubAddress string
 	if pubAddress, err = UploadQiniu(outFullPath, cdnPath); err != nil {
@@ -135,12 +149,14 @@ func Action(c *cli.Context) {
 			continue
 		}
 
-		log.Infof("reply: %v", mission)
+		//log.Infof("reply: %v", mission)
 		if mission.Idle != 0 {
-			log.Infof("Idle for next reply: %v", mission.Idle)
+			//log.Infof("Idle for next reply: %v", mission.Idle)
+			fmt.Print(".")
 			time.Sleep(mission.Idle)
 			continue
 		}
-		missionQueue <- mission //Mission{Repo: reply.Repo, Branch: reply.Branch, Cgo: reply.Cgo}
+		log.Infof("new mission from xrpc: %v", mission)
+		missionQueue <- mission
 	}
 }

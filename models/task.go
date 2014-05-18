@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"time"
 )
 
@@ -123,12 +124,11 @@ func GetAvaliableTask(os, arch string) (task *Task, err error) {
 	}
 	if !exists {
 		task.CgoEnable = true
-		if exists, err := orm.Asc("created").Get(task); err == nil && exists {
-			return task, nil
+		if exists, err := orm.Asc("created").Get(task); err != nil || !exists {
+			return nil, ErrTaskNotAvaliable
 		}
-		return nil, ErrTaskNotAvaliable
 	}
-	affec, err := orm.Id(task.Id).Update(&Task{Status: ST_PENDING})
+	affec, err := orm.Id(task.Id).Update(&Task{Status: ST_PENDING}, &Task{Status: ST_READY})
 	if err != nil {
 		return nil, err
 	}

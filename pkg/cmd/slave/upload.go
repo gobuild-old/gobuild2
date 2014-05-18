@@ -17,10 +17,10 @@ func initQiniu(access, secret string, bulket string) {
 }
 
 func UploadQiniu(localFile string, destName string) (addr string, err error) {
-	policy := rs.PutPolicy{Scope: defaultBulket}
+	destName = strings.TrimLeft(destName, "/")
+	policy := rs.PutPolicy{Scope: defaultBulket + ":" + destName}
 	uptoken := policy.Token(nil)
 
-	destName = strings.TrimLeft(destName, "/")
 	var ret io.PutRet
 	var extra = new(io.PutExtra)
 	if err = io.PutFile(nil, &ret, uptoken, destName, localFile, extra); err != nil {
