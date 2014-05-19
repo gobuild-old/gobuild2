@@ -16,9 +16,10 @@ const (
 )
 
 type Repository struct {
-	Id    int64
-	Uri   string `xorm:"unique(r)"`
-	Brief string
+	Id      int64
+	Uri     string `xorm:"unique(r)"`
+	Brief   string
+	Created time.Time `xorm:"created"`
 }
 
 type RepoStatistic struct {
@@ -71,6 +72,12 @@ func CreateRepository(repoUri string) (*Repository, error) {
 	r.Brief = "todo, not get"
 	_, err := orm.Insert(r)
 	return r, err
+}
+
+func GetAllRepos(count, start int) ([]Repository, error) {
+	var rs []Repository
+	err := orm.Limit(count, start).Desc("created").Find(&rs)
+	return rs, err
 }
 
 func GetRepositoryById(id int64) (*Repository, error) {

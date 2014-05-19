@@ -1,4 +1,11 @@
 {{template "base/header" .}}
 {{template "base/navbar" .}}
 <h1>Home</h1>
+<div>
+	<ul>
+		{{range .Repos}}
+		<li>[{{.Id}}] <a href="https://{{.Uri}}">{{.Uri}}</a> - {{.Brief}}</li>
+		{{end}}
+	</ul>
+</div>
 {{template "base/footer" .}}
