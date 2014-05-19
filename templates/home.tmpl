@@ -1,11 +1,18 @@
 {{template "base/header" .}}
 {{template "base/navbar" .}}
-<h1>Home</h1>
+<div class="container">
+<h3>Repository List<span class="pull-right"><input class="form-control" type="input" placeholder="search"/></span></h3>
 <div>
-	<ul>
+	<ul class="list-group">
 		{{range .Repos}}
-		<li>[{{.Id}}] <a href="https://{{.Uri}}">{{.Uri}}</a> - {{.Brief}}</li>
+		<li class="list-group-item">[{{.Id}}] <a href="/repo?id={{.Id}}">{{.Uri}}</a> - {{.Brief}}</li>
 		{{end}}
 	</ul>
+</div>
+<form role="form">
+	<label>Repo Name</label>
+	<input class="form-control" type="input" name="repo-name" placeholder="github.com/.../..." />
+	<button class="btn btn-default">Add Repository</button>
+</form>
 </div>
 {{template "base/footer" .}}

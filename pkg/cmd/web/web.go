@@ -46,6 +46,7 @@ func Action(c *cli.Context) {
 	xrpc.HandleRpc()
 	m.Get("/ruok", routers.Ruok)
 	m.Any("/", routers.Home)
+	m.Any("/repo", routers.Repo)
 	http.Handle("/", m)
 
 	if err = models.ResetAllTaskStatus(); err != nil {

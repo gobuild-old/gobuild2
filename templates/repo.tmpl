@@ -1,0 +1,33 @@
+{{template "base/header" .}}
+{{template "base/navbar" .}}
+<div class="container">
+<div>
+	<a href="https://{{.Repo.Uri}}">[source-view]</a> <span>{{.Repo.Uri}}</span>
+</div>
+<p>
+	{{.Repo.Brief}}
+</p>
+<div>auto-detected: mac</div>
+<div class="row">
+	<div class="col-md-8">
+	<ul class="list-group">
+		<li class="list-group-item">Linux<span class="pull-right">download</span></li>
+		<li class="list-group-item">Mac</li>
+		<li class="list-group-item">Windows</li>
+	</ul>
+</div>
+	<div class="col-md-4">
+		sha: jghasdfasdfkasdfasdfasd<br>
+		last build 2min ago<br>
+		total download: 1000<br>
+		<button class="btn-sm btn btn-default">build now</button>
+	</div>
+</div>
+<div>
+	<ul class="list-group">
+		{{range .Tasks}}
+		<li class="list-group-item">{{.Os}} - {{.Arch}} {{.Updated}} <a href="{{.ArchieveAddr}}"> <span class="glyphicon glyphicon-floppy-save"></span></a></li>
+		{{end}}
+	</ul>
+</div>
+{{template "base/footer" .}}
