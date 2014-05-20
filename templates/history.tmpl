@@ -1,0 +1,32 @@
+{{template "base/header" .}}
+{{template "base/navbar" .}}
+<div class="container">
+	<h2>Build History</h2>
+	<div>
+		<h4>{{.Task.Repo.Uri}}<a class="pull-right" href="{{.Task.ArchieveAddr}}">download <span class="glyphicon glyphicon-arrow-down"></span></a></h4>
+		<div>
+			<p>
+				commits: <br/>
+				start-time: {{.Task.Created}}<br/>
+				last-update: {{.Task.Updated}}<br/>
+				status: {{.Task.Status}}<br/>
+			</p>
+		</div>
+	</div>
+
+	{{range .History}}
+	<div class="panel panel-default">
+		<div class="panel-heading">status: {{.Status}}<span class="pull-right">{{.Updated}}</span></div>
+		<div class="panel-body">
+			{{.Output}}
+  		</div>
+	</div>
+	{{end}}
+	<div class="panel panel-default">
+		<div class="panel-heading">---</div>
+		<div class="panel-body">
+			[INFO] ---
+  		</div>
+	</div>
+</div>
+{{template "base/footer" .}}

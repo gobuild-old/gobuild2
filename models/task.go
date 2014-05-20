@@ -38,6 +38,14 @@ type DownloadHistory struct {
 	CurrTime time.Time `xorm:"created"`
 }
 
+type BuildHistory struct {
+	Id      int64
+	Tid     int64  `xorm:"unique(b)"`
+	Status  string `xorm:"unique(b)"`
+	Output  string `xorm:"TEXT"`
+	Updated string `xorm:"updated"`
+}
+
 type Task struct {
 	Id           int64
 	Rid          int64
@@ -60,7 +68,7 @@ var (
 )
 
 func init() {
-	tables = append(tables, new(Task), new(Repository), new(RepoStatistic), new(DownloadHistory))
+	tables = append(tables, new(Task), new(Repository), new(RepoStatistic), new(DownloadHistory), new(BuildHistory))
 }
 
 func CreateRepository(repoUri string) (*Repository, error) {
@@ -94,6 +102,12 @@ func CreateTask(task *Task) (*Task, error) {
 	return task, err
 }
 
+func GetTasksByRid(rid int64) ([]Task, error) {
+	var ts []Task
+	err := orm.Find(&ts, &Task{Rid: rid})
+	return ts, err
+}
+
 func GetTaskById(tid int64) (*Task, error) {
 	t := new(Task)
 	has, err := orm.Id(tid).Get(t)
@@ -113,7 +127,15 @@ func ResetAllTaskStatus() error {
 }
 
 func UpdateTaskStatus(tid int64, status string, extra string) error {
-	_, err := orm.Id(tid).Update(&Task{Status: status, ArchieveAddr: extra})
+	if _, err := orm.Id(tid).Update(&Task{Status: status, ArchieveAddr: extra}); err != nil {
+		return err
+	}
+	condi := &BuildHistory{Tid: tid, Status: status}
+	if has, err := orm.Get(condi); err == nil && has {
+		_, er := orm.Update(&BuildHistory{Output: extra}, condi)
+		return er
+	}
+	_, err := orm.Insert(&BuildHistory{Tid: tid, Status: status, Output: extra})
 	return err
 }
 
@@ -142,4 +164,10 @@ func GetAvaliableTask(os, arch string) (task *Task, err error) {
 		return nil, ErrTaskNotAvaliable
 	}
 	return task, nil
+}
+
+func GetAllBuildHistoryByTid(tid int64) ([]BuildHistory, error){
+	var bh  []BuildHistory
+	err := orm.Find(&bh, &BuildHistory{Tid: tid})
+	return bh, err 
 }

@@ -10,8 +10,10 @@ import (
 	"github.com/gobuild/gobuild2/pkg/xrpc"
 	"github.com/gobuild/gobuild2/routers"
 	"github.com/gobuild/log"
+	"github.com/gogits/binding"
 
 	"github.com/codegangsta/cli"
+	"github.com/codegangsta/martini-contrib/web"
 	"github.com/go-martini/martini"
 	"github.com/martini-contrib/render"
 )
@@ -29,6 +31,7 @@ func newMartini() *martini.ClassicMartini {
 	//return &martini.ClassicMartini{m, r}
 	m := martini.Classic()
 	m.Use(render.Renderer())
+	m.Use(web.ContextWithCookieSecret(""))
 	return m
 }
 
@@ -47,6 +50,10 @@ func Action(c *cli.Context) {
 	m.Get("/ruok", routers.Ruok)
 	m.Any("/", routers.Home)
 	m.Any("/repo", routers.Repo)
+	m.Any("/history", routers.History)
+
+	m.Post("/new-repo", binding.Bind(routers.RepoInfoForm{}), routers.NewRepo)
+	m.Post("/api/build", binding.Bind(routers.RepositoryForm{}), routers.NewBuild)
 	http.Handle("/", m)
 
 	if err = models.ResetAllTaskStatus(); err != nil {

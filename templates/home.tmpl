@@ -1,6 +1,15 @@
 {{template "base/header" .}}
 {{template "base/navbar" .}}
 <div class="container">
+
+<div>
+<form role="form" method="post" action="/new-repo">
+	<label>Repo Name</label>
+	<input class="form-control" type="input" name="repo-name" placeholder="github.com/.../..." />
+	<button class="btn btn-default">Add Repository</button>
+</form>
+</div>
+
 <h3>Repository List<span class="pull-right"><input class="form-control" type="input" placeholder="search"/></span></h3>
 <div>
 	<ul class="list-group">
@@ -8,11 +17,16 @@
 		<li class="list-group-item">[{{.Id}}] <a href="/repo?id={{.Id}}">{{.Uri}}</a> - {{.Brief}}</li>
 		{{end}}
 	</ul>
+	<ul class="pagination">
+	  <li><a href="#">&laquo;</a></li>
+	  <li><a href="#">1</a></li>
+	  <li><a href="#">2</a></li>
+	  <li><a href="#">3</a></li>
+	  <li><a href="#">4</a></li>
+	  <li><a href="#">5</a></li>
+	  <li><a href="#">&raquo;</a></li>
+	</ul>
 </div>
-<form role="form">
-	<label>Repo Name</label>
-	<input class="form-control" type="input" name="repo-name" placeholder="github.com/.../..." />
-	<button class="btn btn-default">Add Repository</button>
-</form>
+
 </div>
 {{template "base/footer" .}}
