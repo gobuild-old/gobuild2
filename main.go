@@ -11,7 +11,7 @@ import (
 	"github.com/gobuild/gobuild2/pkg/cmd/web"
 )
 
-const VERSION = "0.0.1.0508"
+const VERSION = "0.0.1.0522"
 
 var app = cli.NewApp()
 
