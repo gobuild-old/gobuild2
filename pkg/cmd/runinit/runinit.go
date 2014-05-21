@@ -7,7 +7,7 @@ import (
 
 	"github.com/codegangsta/cli"
 	"github.com/gobuild/gobuild2/pkg/config"
-	"launchpad.net/goyaml"
+	"github.com/gobuild/goyaml"
 )
 
 func Action(c *cli.Context) {

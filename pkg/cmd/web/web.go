@@ -10,11 +10,11 @@ import (
 	"github.com/gobuild/gobuild2/pkg/xrpc"
 	"github.com/gobuild/gobuild2/routers"
 	"github.com/gobuild/log"
-	"github.com/gogits/binding"
 
 	"github.com/codegangsta/cli"
 	"github.com/codegangsta/martini-contrib/web"
 	"github.com/go-martini/martini"
+	"github.com/martini-contrib/binding"
 	"github.com/martini-contrib/render"
 )
 

@@ -2,13 +2,13 @@ package pack
 
 import (
 	"fmt"
+	"github.com/gobuild/goyaml"
+	"github.com/gobuild/log"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
-	"github.com/gobuild/log"
-	"launchpad.net/goyaml"
 
 	"github.com/codegangsta/cli"
 	sh "github.com/codeskyblue/go-sh"
