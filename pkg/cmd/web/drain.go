@@ -11,7 +11,6 @@ func testAdd() {
 		log.Errorf("create repo err: %v", err)
 	}
 	task := &models.Task{
-		// Repo:      "github.com/codeskyblue/fswatch",
 		Branch:    "master",
 		CgoEnable: false,
 		Arch:      "386",

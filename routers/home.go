@@ -29,6 +29,7 @@ func NewBuild(rf RepositoryForm, ctx *web.Context) {
 	task := new(models.Task)
 	task.Arch = "amd64"
 	task.Os = "darwin"
+	task.CommitId = "xxxxxx"
 	task.CgoEnable = false
 	task.Rid = rf.Rid
 	if _, err := models.CreateTask(task); err != nil {

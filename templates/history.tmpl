@@ -6,6 +6,7 @@
 		<h4>{{.Task.Repo.Uri}}<a class="pull-right" href="{{.Task.ArchieveAddr}}">download <span class="glyphicon glyphicon-arrow-down"></span></a></h4>
 		<div>
 			<p>
+				task-id: {{.Task.Id}}<br/>
 				commits: <br/>
 				start-time: {{.Task.Created}}<br/>
 				last-update: {{.Task.Updated}}<br/>
@@ -17,9 +18,11 @@
 	{{range .History}}
 	<div class="panel panel-default">
 		<div class="panel-heading">status: {{.Status}}<span class="pull-right">{{.Updated}}</span></div>
+		{{if .Output}}
 		<div class="panel-body">
-			{{.Output}}
+			<pre>{{.Output | html}}</pre>
   		</div>
+  		{{end}}
 	</div>
 	{{end}}
 	<div class="panel panel-default">

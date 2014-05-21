@@ -7,16 +7,19 @@
 <p>{{.Repo.Brief}}</p>
 <div>auto-detected: mac</div>
 <div class="row">
-	<div class="col-md-8 well">
-		sha: jghasdfasdfkasdfasdfasd<br>
-		last commit: 2day ago<br>
-		desc: fix bug<br>
-		last build 2min ago<br>
-		total download: 1000<br>
-		<form method="post" action="/api/build">
-			<input type="hidden" name="rid" value="{{.Repo.Id}}">
-			<button class="btn-sm btn btn-default">build now</button>
-		</form>
+	<div class="col-md-8">
+		<div class="well">
+			sha: jghasdfasdfkasdfasdfasd<br>
+			last commit: 2day ago<br>
+			desc: fix bug<br>
+			last build 2min ago<br>
+			total download: 1000<br>
+			<form method="post" action="/api/build">
+				<input type="hidden" name="rid" value="{{.Repo.Id}}">
+				<button class="btn-sm btn btn-default">build now</button>
+			</form>
+		</div>
+	</div>
 </div>
 	<div class="col-md-4">
 		<ul class="list-group">
@@ -31,7 +34,7 @@
 	<ul class="list-group">
 		{{range .Tasks}}
 		<li class="list-group-item">
-			{{.Os}} - {{.Arch}} {{.Updated}} 
+			{{.Os}} - {{.Arch}} {{.Updated}} {{.Status}}
 			<a class="" href="/history?id={{.Id}}">details</a>
 			<button class="btn btn-default btn-xs">rebuid</button>
 			<a class="pull-right" href="{{.ArchieveAddr}}">download

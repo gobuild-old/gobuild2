@@ -1,7 +1,9 @@
 package slave
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -39,19 +41,25 @@ func checkError(err error) {
 }
 
 func work(m *xrpc.Mission) (err error) {
-	notify := func(status string, extra ...string) {
-		mstatus := &xrpc.MissionStatus{Mid: m.Mid, Status: status, Extra: strings.Join(extra, "")}
+	notify := func(status string, output string, extra ...string) {
+		mstatus := &xrpc.MissionStatus{Mid: m.Mid, Status: status,
+			Output: output,
+			Extra:  strings.Join(extra, ""),
+		}
 		ok := false
 		err := xrpc.Call("UpdateMissionStatus", mstatus, &ok)
 		checkError(err)
 	}
 	defer func() {
 		if err != nil {
-			notify(models.ST_ERROR, err.Error())
+			notify(models.ST_ERROR, "", err.Error())
 		}
 	}()
 	// prepare shell session
 	sess := sh.NewSession()
+	buffer := bytes.NewBuffer(nil)
+	sess.Stdout = io.MultiWriter(buffer, os.Stdout)
+	sess.Stderr = io.MultiWriter(buffer, os.Stderr)
 	sess.ShowCMD = true
 	var gopath, _ = filepath.Abs(TMPDIR)
 	sess.SetEnv("GOPATH", gopath)
@@ -65,7 +73,6 @@ func work(m *xrpc.Mission) (err error) {
 	var repoAddr = m.Repo
 	var cleanRepoName = sanitizedRepoPath(repoAddr)
 
-	notify(models.ST_RETRIVING)
 	var srcPath = filepath.Join(gopath, "src", cleanRepoName)
 
 	getsrc := func() (err error) {
@@ -85,26 +92,34 @@ func work(m *xrpc.Mission) (err error) {
 	}
 
 	// get source code
-	if err = getsrc(); err != nil {
+	notify(models.ST_RETRIVING, "start get source")
+	err = getsrc()
+	notify(models.ST_RETRIVING, string(buffer.Bytes()))
+	if err != nil {
 		log.Errorf("getsource err: %v", err)
 		return
 	}
+	buffer.Reset()
 
 	// TODO: change to right branch
-	extention := "tar.gz"
-	if m.Os == "windows" {
-		extention = "zip"
-	}
+	// extention := "tar.gz"
+	// if m.Os == "windows" {
+	// extention = "zip"
+	// }
+
+	extention := "zip"
 	var outFile = fmt.Sprintf("%s-%s-%s-%s.%s", filepath.Base(cleanRepoName), m.Branch, m.Os, m.Arch, extention)
 	var outFullPath = filepath.Join(srcPath, outFile)
-	notify(models.ST_BUILDING)
-	// err = sess.Command(PROGRAM, "pack", "-o", outFile, "-gom", "gopm", sh.Dir(srcPath)).Run()
+
+	notify(models.ST_BUILDING, "start building")
 	err = sess.Command(PROGRAM, "pack", "-o", outFile, sh.Dir(srcPath)).Run()
+	notify(models.ST_BUILDING, string(buffer.Bytes()))
 	if err != nil {
 		log.Error(err)
 		return
 	}
-	notify(models.ST_PUBLISHING)
+
+	notify(models.ST_PUBLISHING, "")
 	// timestamp := time.Now().Format("20060102-150405")
 	var cdnPath = fmt.Sprintf("m%d/%s/raw/%s", m.Mid, cleanRepoName, outFile)
 	log.Infof("cdn path: %s", cdnPath)

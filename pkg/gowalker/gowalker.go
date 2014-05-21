@@ -6,6 +6,8 @@ import (
 	"github.com/Unknwon/com"
 )
 
+// refresh: /refresh? pkgname=
+
 var searchApi = "https://gowalker.org/api/v1/search?key={keyword}&gorepo=false&gosubrepo=false&cmd=true&cgo=false"
 
 type SearchItem struct {

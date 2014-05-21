@@ -27,14 +27,18 @@ type QiniuInfo struct {
 type MissionStatus struct {
 	Mid    int64 // mission id
 	Status string
+	Output string
 	Extra  string
 }
 
 type Mission struct {
-	Idle      time.Duration
-	Mid       int64
-	Repo      string
-	Branch    string
+	Idle time.Duration
+	Mid  int64
+
+	Repo     string
+	Branch   string
+	CommitId string
+
 	CgoEnable bool
 	Os, Arch  string
 }
@@ -68,9 +72,10 @@ func (r *Rpc) GetMission(args *HostInfo, rep *Mission) error {
 		rep.Mid = task.Id
 		rep.Repo = task.Repo.Uri
 		rep.Branch = task.Branch
+		rep.CommitId = task.CommitId
 		return nil
 	case models.ErrTaskNotAvaliable:
-		rep.Idle = time.Second * 2
+		rep.Idle = time.Second * 3
 		return nil
 	default:
 		return err
@@ -80,7 +85,7 @@ func (r *Rpc) GetMission(args *HostInfo, rep *Mission) error {
 func (r *Rpc) UpdateMissionStatus(args *MissionStatus, reply *bool) error {
 	log.Infof("update status: mid(%d) status(%s) extra(%s)", args.Mid, args.Status, args.Extra)
 	*reply = true
-	err := models.UpdateTaskStatus(args.Mid, args.Status, args.Extra)
+	err := models.UpdateTaskStatus(args.Mid, args.Status, args.Output)
 	return err
 }
 

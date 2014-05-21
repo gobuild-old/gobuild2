@@ -50,11 +50,13 @@ type Task struct {
 	Id           int64
 	Rid          int64
 	Repo         *Repository `xorm:"-"`
-	Branch       string      // can also be tag, commit_id
-	Os           string
-	Arch         string
+	Os           string      `xorm:"unique(t)"`
+	Arch         string      `xorm:"unique(t)"`
 	CgoEnable    bool
 	ArchieveAddr string
+
+	Branch   string
+	CommitId string `xorm:"unique(t)"`
 
 	Status  string
 	Created time.Time `xorm:"created"`
@@ -126,16 +128,20 @@ func ResetAllTaskStatus() error {
 	return err
 }
 
-func UpdateTaskStatus(tid int64, status string, extra string) error {
-	if _, err := orm.Id(tid).Update(&Task{Status: status, ArchieveAddr: extra}); err != nil {
+func UpdateTaskStatus(tid int64, status string, output string) error {
+	pubAddr := ""
+	if status == ST_DONE {
+		pubAddr = output
+	}
+	if _, err := orm.Id(tid).Update(&Task{Status: status, ArchieveAddr: pubAddr}); err != nil {
 		return err
 	}
 	condi := &BuildHistory{Tid: tid, Status: status}
 	if has, err := orm.Get(condi); err == nil && has {
-		_, er := orm.Update(&BuildHistory{Output: extra}, condi)
+		_, er := orm.Update(&BuildHistory{Output: output}, condi)
 		return er
 	}
-	_, err := orm.Insert(&BuildHistory{Tid: tid, Status: status, Output: extra})
+	_, err := orm.Insert(&BuildHistory{Tid: tid, Status: status, Output: output})
 	return err
 }
 
@@ -166,8 +172,8 @@ func GetAvaliableTask(os, arch string) (task *Task, err error) {
 	return task, nil
 }
 
-func GetAllBuildHistoryByTid(tid int64) ([]BuildHistory, error){
-	var bh  []BuildHistory
-	err := orm.Find(&bh, &BuildHistory{Tid: tid})
-	return bh, err 
+func GetAllBuildHistoryByTid(tid int64) ([]BuildHistory, error) {
+	var bh []BuildHistory
+	err := orm.Asc("id").Find(&bh, &BuildHistory{Tid: tid})
+	return bh, err
 }
