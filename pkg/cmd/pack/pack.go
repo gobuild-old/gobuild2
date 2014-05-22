@@ -2,18 +2,17 @@ package pack
 
 import (
 	"fmt"
-	"github.com/gobuild/goyaml"
-	"github.com/gobuild/log"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
+	"github.com/gobuild/goyaml"
+	"github.com/gobuild/log"
 
 	"github.com/codegangsta/cli"
 	sh "github.com/codeskyblue/go-sh"
 	"github.com/gobuild/gobuild2/pkg/config"
-	"github.com/unknwon/com"
 )
 
 func init() {
@@ -71,7 +70,7 @@ func Action(c *cli.Context) {
 	sess.ShowCMD = true
 	// parse yaml
 	var pcfg = new(config.PackageConfig)
-	if com.IsExist(config.RCFILE) {
+	if sh.Test("file", config.RCFILE) {
 		data, er := ioutil.ReadFile(config.RCFILE)
 		if er != nil {
 			err = er

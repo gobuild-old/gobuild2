@@ -3,6 +3,9 @@ package models
 import (
 	"errors"
 	"time"
+
+	"github.com/gobuild/gobuild2/pkg/gowalker"
+	"github.com/qiniu/log"
 )
 
 const (
@@ -48,7 +51,7 @@ type BuildHistory struct {
 
 type Task struct {
 	Id           int64
-	Rid          int64
+	Rid          int64       `xorm:"unique(t)"`
 	Repo         *Repository `xorm:"-"`
 	Os           string      `xorm:"unique(t)"`
 	Arch         string      `xorm:"unique(t)"`
@@ -74,13 +77,18 @@ func init() {
 }
 
 func CreateRepository(repoUri string) (*Repository, error) {
+	pkginfo, err := gowalker.GetCmdPkgInfo(repoUri)
+	if err != nil {
+		log.Errorf("gowalker not passed check: %v", err)
+		return nil, err
+	}
 	r := &Repository{Uri: repoUri}
 	if has, err := orm.Get(r); err == nil && has {
 		return r, nil
 	}
 	r.Uri = repoUri
-	r.Brief = "todo, not get"
-	_, err := orm.Insert(r)
+	r.Brief = pkginfo.Description //"todo, not get"
+	_, err = orm.Insert(r)
 	return r, err
 }
 

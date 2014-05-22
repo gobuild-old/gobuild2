@@ -40,6 +40,12 @@ func checkError(err error) {
 	}
 }
 
+type NTMsg struct {
+	Status string
+	Output string
+	Extra  string
+}
+
 func work(m *xrpc.Mission) (err error) {
 	notify := func(status string, output string, extra ...string) {
 		mstatus := &xrpc.MissionStatus{Mid: m.Mid, Status: status,
@@ -93,7 +99,31 @@ func work(m *xrpc.Mission) (err error) {
 
 	// get source code
 	notify(models.ST_RETRIVING, "start get source")
+	var done = make(chan bool)
+	// var msgQueue = make(chan NTMsg)
+	// go func() {
+	// 	for {
+	// 		select {
+	// 		case msg := <-msgQueue:
+	// 			notify(msg.Status, msg.Output, msg.Extra)
+	// 		}
+	// 	}
+	// }()
+	// notify message queue
+	go func() {
+		for {
+			select {
+			case <-done:
+				done <- true
+				break
+			case <-time.After(2 * time.Second):
+				notify(models.ST_RETRIVING, string(buffer.Bytes()))
+			}
+		}
+	}()
 	err = getsrc()
+	done <- true
+	<-done
 	notify(models.ST_RETRIVING, string(buffer.Bytes()))
 	if err != nil {
 		log.Errorf("getsource err: %v", err)
