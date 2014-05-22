@@ -58,6 +58,7 @@ func Call(method string, args interface{}, reply interface{}) error {
 	if err != nil {
 		return err
 	}
+	defer client.Close()
 	return client.Call("Rpc."+method, args, reply)
 }
 
