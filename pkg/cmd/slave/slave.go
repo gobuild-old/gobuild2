@@ -115,7 +115,7 @@ func work(m *xrpc.Mission) (err error) {
 			select {
 			case <-done:
 				done <- true
-				break
+				return
 			case <-time.After(2 * time.Second):
 				notify(models.ST_RETRIVING, string(buffer.Bytes()))
 			}
