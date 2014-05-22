@@ -102,10 +102,14 @@ func work(m *xrpc.Mission) (err error) {
 	var done = make(chan bool)
 	// var msgQueue = make(chan NTMsg)
 	// go func() {
+	// quit := make(chan bool)
 	// 	for {
 	// 		select {
 	// 		case msg := <-msgQueue:
 	// 			notify(msg.Status, msg.Output, msg.Extra)
+	// 		case <- quic:
+	// quit <- true
+	//			return
 	// 		}
 	// 	}
 	// }()
