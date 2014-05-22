@@ -19,20 +19,22 @@ import (
 )
 
 func newMartini() *martini.ClassicMartini {
-	/*
-		r := martini.NewRouter()
-		m := martini.New()
-		m.Use(middleware.Logger())
-		m.Use(martini.Recovery())
-		m.Use(martini.Static("public"))
-		m.MapTo(r, (*martini.Routes)(nil))
-		m.Action(r.Handle)
-	*/
-	//return &martini.ClassicMartini{m, r}
-	m := martini.Classic()
+
+	r := martini.NewRouter()
+	m := martini.New()
+	m.Use(Logger())
+	m.Use(martini.Recovery())
+	// m.Use(martini.Static("public"))
+	m.Use(martini.Static("public", martini.StaticOptions{SkipLogging: true}))
+
+	m.MapTo(r, (*martini.Routes)(nil))
+	m.Action(r.Handle)
+
+	// return &martini.ClassicMartini{m, r}
+	// m := martini.Classic()
 	m.Use(render.Renderer())
 	m.Use(web.ContextWithCookieSecret(""))
-	return m
+	return &martini.ClassicMartini{m, r}
 }
 
 func Action(c *cli.Context) {

@@ -39,12 +39,14 @@ func NewBuild(rf RepositoryForm, ctx *web.Context) {
 }
 
 func Home(r render.Render) {
+	pv := models.RefreshPageView("/")
 	repos, err := models.GetAllRepos(50, 0)
 	if err != nil {
 		log.Errorf("get repos from db error: %v", err)
 	}
 	r.HTML(200, "home", map[string]interface{}{
 		"Repos": repos,
+		"PV":    pv,
 	})
 }
 

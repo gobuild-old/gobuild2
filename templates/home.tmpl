@@ -1,7 +1,9 @@
 {{template "base/header" .}}
 {{template "base/navbar" .}}
 <div class="container">
-
+<div>
+	<p><b>PV:</b>{{.PV}}</p>
+</div>
 <div>
 <form role="form" method="post" action="/new-repo">
 	<label>Repo Name</label>
