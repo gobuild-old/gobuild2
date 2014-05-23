@@ -3,8 +3,9 @@ package routers
 import (
 	"strconv"
 
-	"github.com/codegangsta/martini-contrib/web"
 	"github.com/gobuild/gobuild2/models"
+	"github.com/gobuild/gobuild2/pkg/base"
+	"github.com/gobuild/middleware"
 	"github.com/martini-contrib/render"
 	"github.com/qiniu/log"
 )
@@ -17,15 +18,16 @@ type RepositoryForm struct {
 	Rid int64 `form:"rid" binding:"required"`
 }
 
-func NewRepo(rf RepoInfoForm, ctx *web.Context) {
+func NewRepo(rf RepoInfoForm, ctx *middleware.Context) {
 	var err error
+	rf.Name = base.SanitizedRepoPath(rf.Name)
 	if _, err = models.CreateRepository(rf.Name); err != nil {
 		log.Errorf("create repo error: %v", err)
 	}
 	ctx.Redirect(302, "/")
 }
 
-func NewBuild(rf RepositoryForm, ctx *web.Context) {
+func NewBuild(rf RepositoryForm, ctx *middleware.Context) {
 	task := new(models.Task)
 	task.Arch = "amd64"
 	task.Os = "darwin"

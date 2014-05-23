@@ -12,8 +12,9 @@ import (
 	"github.com/gobuild/log"
 
 	"github.com/codegangsta/cli"
-	"github.com/codegangsta/martini-contrib/web"
+	// "github.com/codegangsta/martini-contrib/web"
 	"github.com/go-martini/martini"
+	"github.com/gobuild/middleware"
 	"github.com/martini-contrib/binding"
 	"github.com/martini-contrib/render"
 )
@@ -33,7 +34,7 @@ func newMartini() *martini.ClassicMartini {
 	// return &martini.ClassicMartini{m, r}
 	// m := martini.Classic()
 	m.Use(render.Renderer())
-	m.Use(web.ContextWithCookieSecret(""))
+	m.Use(middleware.ContextWithCookieSecret(""))
 	return &martini.ClassicMartini{m, r}
 }
 
@@ -53,7 +54,7 @@ func Action(c *cli.Context) {
 	m.Any("/", routers.Home)
 	m.Any("/repo", routers.Repo)
 	m.Any("/history", routers.History)
-
+	m.Any("/download", routers.Download)
 	m.Post("/new-repo", binding.Bind(routers.RepoInfoForm{}), routers.NewRepo)
 	m.Post("/api/build", binding.Bind(routers.RepositoryForm{}), routers.NewBuild)
 	http.Handle("/", m)

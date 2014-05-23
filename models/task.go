@@ -70,6 +70,7 @@ var (
 	ErrTaskNotAvaliable    = errors.New("not task ready for build now")
 	ErrTaskNotExists       = errors.New("task not exists")
 	ErrRepositoryNotExists = errors.New("repo not found")
+	ErrNoAvaliableDownload = errors.New("no avaliable download")
 )
 
 func init() {
@@ -129,6 +130,18 @@ func GetTaskById(tid int64) (*Task, error) {
 	}
 	t.Repo, err = GetRepositoryById(t.Rid)
 	return t, err
+}
+
+func GetOneDownloadableTask(rid int64, os, arch string) (*Task, error) {
+	task := &Task{Os: os, Arch: arch, Rid: rid, Status: ST_DONE}
+	ok, err := orm.Desc("id").Get(task)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, ErrNoAvaliableDownload
+	}
+	return task, nil
 }
 
 func ResetAllTaskStatus() error {

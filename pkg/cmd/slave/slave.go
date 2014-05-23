@@ -13,19 +13,10 @@ import (
 	"github.com/codegangsta/cli"
 	"github.com/codeskyblue/go-sh"
 	"github.com/gobuild/gobuild2/models"
+	"github.com/gobuild/gobuild2/pkg/base"
 	"github.com/gobuild/gobuild2/pkg/xrpc"
 	"github.com/qiniu/log"
 )
-
-func sanitizedRepoPath(repo string) string {
-	if strings.HasSuffix(repo, ".git") {
-		repo = repo[:len(repo)-4]
-	}
-	if strings.HasPrefix(repo, "https://") {
-		repo = repo[len("https://"):]
-	}
-	return repo
-}
 
 var (
 	TMPDIR     = "./tmp"
@@ -77,7 +68,7 @@ func work(m *xrpc.Mission) (err error) {
 	sess.SetEnv("GOARCH", m.Arch)
 
 	var repoAddr = m.Repo
-	var cleanRepoName = sanitizedRepoPath(repoAddr)
+	var cleanRepoName = base.SanitizedRepoPath(repoAddr)
 
 	var srcPath = filepath.Join(gopath, "src", cleanRepoName)
 

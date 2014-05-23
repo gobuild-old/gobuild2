@@ -6,9 +6,23 @@ import (
 
 	"github.com/go-martini/martini"
 	"github.com/gobuild/gobuild2/models"
+	"github.com/gobuild/middleware"
 	"github.com/martini-contrib/render"
 	"github.com/qiniu/log"
 )
+
+func Download(ctx *middleware.Context) {
+	rid, _ := strconv.Atoi(ctx.Request.FormValue("rid"))
+	os := ctx.Request.FormValue("os")
+	arch := ctx.Request.FormValue("arch")
+	task, err := models.GetOneDownloadableTask(int64(rid), os, arch)
+	if err != nil {
+		log.Errorf("get download task: %v", err)
+		http.Error(ctx.ResponseWriter, err.Error(), http.StatusNotFound)
+		return
+	}
+	ctx.Redirect(302, task.ArchieveAddr)
+}
 
 func Repo(r render.Render, params martini.Params, req *http.Request) {
 	id, _ := strconv.Atoi(req.FormValue("id"))
