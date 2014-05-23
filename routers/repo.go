@@ -7,7 +7,6 @@ import (
 	"github.com/go-martini/martini"
 	"github.com/gobuild/gobuild2/models"
 	"github.com/gobuild/middleware"
-	"github.com/martini-contrib/render"
 	"github.com/qiniu/log"
 )
 
@@ -24,7 +23,7 @@ func Download(ctx *middleware.Context) {
 	ctx.Redirect(302, task.ArchieveAddr)
 }
 
-func Repo(r render.Render, params martini.Params, req *http.Request) {
+func Repo(ctx *middleware.Context, params martini.Params, req *http.Request) {
 	id, _ := strconv.Atoi(req.FormValue("id"))
 	rid := int64(id)
 	repo, err := models.GetRepositoryById(rid)
@@ -36,7 +35,7 @@ func Repo(r render.Render, params martini.Params, req *http.Request) {
 		log.Errorf("get tasks by id, error: %v", err)
 	}
 	recentTask, _ := models.GetTaskById(1)
-	r.HTML(200, "repo", map[string]interface{}{
+	ctx.HTML(200, "repo", map[string]interface{}{
 		"Repo":       repo,
 		"RecentTask": recentTask,
 		"Tasks":      tasks,

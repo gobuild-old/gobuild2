@@ -2,21 +2,21 @@ package web
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
 	"strconv"
 
 	"github.com/gobuild/gobuild2/models"
+	"github.com/gobuild/gobuild2/pkg/base"
 	"github.com/gobuild/gobuild2/pkg/config"
 	"github.com/gobuild/gobuild2/pkg/xrpc"
 	"github.com/gobuild/gobuild2/routers"
 	"github.com/gobuild/log"
 
 	"github.com/codegangsta/cli"
-	// "github.com/codegangsta/martini-contrib/web"
 	"github.com/go-martini/martini"
 	"github.com/gobuild/middleware"
 	"github.com/martini-contrib/binding"
-	"github.com/martini-contrib/render"
 )
 
 func newMartini() *martini.ClassicMartini {
@@ -31,10 +31,11 @@ func newMartini() *martini.ClassicMartini {
 	m.MapTo(r, (*martini.Routes)(nil))
 	m.Action(r.Handle)
 
-	// return &martini.ClassicMartini{m, r}
-	// m := martini.Classic()
-	m.Use(render.Renderer())
-	m.Use(middleware.ContextWithCookieSecret(""))
+	var funcMap = base.TemplateFuncs
+
+	m.Use(middleware.ContextWithCookieSecret("", middleware.Options{
+		Funcs: []template.FuncMap{funcMap},
+	}))
 	return &martini.ClassicMartini{m, r}
 }
 

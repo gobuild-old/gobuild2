@@ -20,7 +20,7 @@
 		<div class="panel-heading">status: {{.Status}}<span class="pull-right">{{.Updated}}</span></div>
 		{{if .Output}}
 		<div class="panel-body">
-			<pre>{{.Output | html}}</pre>
+			<pre>{{.Output | ansi2html}}</pre>
   		</div>
   		{{end}}
 	</div>

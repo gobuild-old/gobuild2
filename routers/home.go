@@ -6,7 +6,6 @@ import (
 	"github.com/gobuild/gobuild2/models"
 	"github.com/gobuild/gobuild2/pkg/base"
 	"github.com/gobuild/middleware"
-	"github.com/martini-contrib/render"
 	"github.com/qiniu/log"
 )
 
@@ -51,13 +50,13 @@ func ForceRebuild(tf TaskForm, ctx *middleware.Context) {
 	ctx.Redirect(302, "/history?id="+strconv.Itoa(int(tf.Tid)))
 }
 
-func Home(r render.Render) {
+func Home(ctx *middleware.Context) { //r render.Render) {
 	pv := models.RefreshPageView("/")
 	repos, err := models.GetAllRepos(50, 0)
 	if err != nil {
 		log.Errorf("get repos from db error: %v", err)
 	}
-	r.HTML(200, "home", map[string]interface{}{
+	ctx.HTML(200, "home", map[string]interface{}{
 		"Repos": repos,
 		"PV":    pv,
 	})

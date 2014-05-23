@@ -6,11 +6,11 @@ import (
 
 	"github.com/go-martini/martini"
 	"github.com/gobuild/gobuild2/models"
-	"github.com/martini-contrib/render"
+	"github.com/gobuild/middleware"
 	"github.com/qiniu/log"
 )
 
-func History(r render.Render, params martini.Params, req *http.Request) {
+func History(ctx *middleware.Context, params martini.Params, req *http.Request) {
 	id, _ := strconv.Atoi(req.FormValue("id"))
 	tid := int64(id)
 	task, err := models.GetTaskById(tid)
@@ -21,7 +21,7 @@ func History(r render.Render, params martini.Params, req *http.Request) {
 	if err != nil {
 		log.Errorf("get task history error: %v", err)
 	}
-	r.HTML(200, "history", map[string]interface{}{
+	ctx.HTML(200, "history", map[string]interface{}{
 		"Task":    task,
 		"History": history,
 	})
