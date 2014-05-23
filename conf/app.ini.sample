@@ -6,6 +6,7 @@ PORT = 8000
 [database]
 DBTYPE = mysql
 HOST =
+PORT =
 NAME = gobuild
 USER = root
 PASSWD = toor

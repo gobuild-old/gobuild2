@@ -57,6 +57,7 @@ func Action(c *cli.Context) {
 	m.Any("/download", routers.Download)
 	m.Post("/new-repo", binding.Bind(routers.RepoInfoForm{}), routers.NewRepo)
 	m.Post("/api/build", binding.Bind(routers.RepositoryForm{}), routers.NewBuild)
+	m.Post("/api/force-rebuild", binding.Bind(routers.TaskForm{}), routers.ForceRebuild)
 	http.Handle("/", m)
 
 	if err = models.ResetAllTaskStatus(); err != nil {

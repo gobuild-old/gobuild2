@@ -18,6 +18,10 @@ type RepositoryForm struct {
 	Rid int64 `form:"rid" binding:"required"`
 }
 
+type TaskForm struct {
+	Tid int64 `form:"tid" binding:"required"`
+}
+
 func NewRepo(rf RepoInfoForm, ctx *middleware.Context) {
 	var err error
 	rf.Name = base.SanitizedRepoPath(rf.Name)
@@ -38,6 +42,13 @@ func NewBuild(rf RepositoryForm, ctx *middleware.Context) {
 		log.Errorf("create module error: %v", err)
 	}
 	ctx.Redirect(302, "/repo?id="+strconv.Itoa(int(rf.Rid)))
+}
+
+func ForceRebuild(tf TaskForm, ctx *middleware.Context) {
+	if err := models.ResetTask(tf.Tid); err != nil {
+		log.Errorf("reset task failed: %v", err)
+	}
+	ctx.Redirect(302, "/history?id="+strconv.Itoa(int(tf.Tid)))
 }
 
 func Home(r render.Render) {

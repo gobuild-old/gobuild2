@@ -35,7 +35,10 @@
 		<li class="list-group-item">
 			{{.Os}} - {{.Arch}} {{.Updated}} {{.Status}}
 			<a class="" href="/history?id={{.Id}}">details</a>
-			<button class="btn btn-default btn-xs">rebuid</button>
+			<form class="pull-right" method="post" action="/api/force-rebuild">
+				<input type="hidden" name="tid" value="{{.Id}}">
+				<button class="btn btn-default btn-xs">rebuid</button>
+			</form>
 			<a class="pull-right" href="{{.ArchieveAddr}}">download
 			<span class="glyphicon glyphicon-floppy-save"></span></a>
 		</li>

@@ -39,6 +39,6 @@ func Repo(r render.Render, params martini.Params, req *http.Request) {
 	r.HTML(200, "repo", map[string]interface{}{
 		"Repo":       repo,
 		"RecentTask": recentTask,
-		"Tasks":      tasks, // []*models.Task{recentTask, recentTask},
+		"Tasks":      tasks,
 	})
 }

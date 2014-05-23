@@ -71,6 +71,7 @@ var (
 	ErrTaskNotExists       = errors.New("task not exists")
 	ErrRepositoryNotExists = errors.New("repo not found")
 	ErrNoAvaliableDownload = errors.New("no avaliable download")
+	ErrTaskIsRunning       = errors.New("task is running")
 )
 
 func init() {
@@ -142,6 +143,18 @@ func GetOneDownloadableTask(rid int64, os, arch string) (*Task, error) {
 		return nil, ErrNoAvaliableDownload
 	}
 	return task, nil
+}
+
+func ResetTask(tid int64) error {
+	task, err := GetTaskById(tid)
+	if err != nil {
+		return err
+	}
+	if task.Status == ST_DONE || task.Status == ST_ERROR {
+		orm.Delete(&BuildHistory{Tid: task.Id})
+		orm.Id(task.Id).Update(&Task{Status: ST_READY})
+	}
+	return nil
 }
 
 func ResetAllTaskStatus() error {

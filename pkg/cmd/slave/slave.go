@@ -133,7 +133,7 @@ func work(m *xrpc.Mission) (err error) {
 	// }
 
 	extention := "zip"
-	var outFile = fmt.Sprintf("%s-%s-%s-%s.%s", filepath.Base(cleanRepoName), m.Branch, m.Os, m.Arch, extention)
+	var outFile = fmt.Sprintf("%s-%s-%s.%s", filepath.Base(cleanRepoName), m.Os, m.Arch, extention)
 	var outFullPath = filepath.Join(srcPath, outFile)
 
 	notify(models.ST_BUILDING, "start building")
