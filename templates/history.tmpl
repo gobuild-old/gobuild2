@@ -8,8 +8,8 @@
 			<p>
 				task-id: {{.Task.Id}}<br/>
 				commits: <br/>
-				start-time: {{.Task.Created}}<br/>
-				last-update: {{.Task.Updated}}<br/>
+				start-time: {{.Task.Created }}<br/>
+				last-update: {{.Task.Updated | timesince}} ago<br/>
 				status: {{.Task.Status}}<br/>
 			</p>
 		</div>

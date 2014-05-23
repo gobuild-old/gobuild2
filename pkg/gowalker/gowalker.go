@@ -1,6 +1,7 @@
 package gowalker
 
 import (
+	"crypto/tls"
 	"errors"
 	"net/http"
 
@@ -13,7 +14,16 @@ var (
 	base       = "https://gowalker.org/api/v1/"
 	searchApi  = base + "search?key={keyword}&gorepo=false&gosubrepo=false&cmd=true&cgo=false"
 	pkginfoApi = base + "pkginfo?pkgname={pkgname}"
+
+	httpClient *http.Client
 )
+
+func init() {
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	httpClient = &http.Client{Transport: tr}
+}
 
 var (
 	ErrPkgNotExists    = errors.New("gowalker: package not exist")
@@ -40,7 +50,7 @@ func NewSearch(key string) (*SearchPackages, error) {
 		"keyword": key,
 	})
 	packages := new(SearchPackages)
-	err := com.HttpGetJSON(&http.Client{}, url, packages)
+	err := com.HttpGetJSON(httpClient, url, packages)
 	return packages, err
 }
 
@@ -73,7 +83,7 @@ func GetPkgInfo(pkgname string) (*PackageItem, error) {
 		"pkgname": pkgname,
 	})
 	pkginfo := new(PackageItem)
-	if err = com.HttpGetJSON(&http.Client{}, url, pkginfo); err != nil {
+	if err = com.HttpGetJSON(httpClient, url, pkginfo); err != nil {
 		return nil, err
 	}
 	if pkginfo.Id == 0 {
