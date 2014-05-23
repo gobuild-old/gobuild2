@@ -73,10 +73,10 @@ func work(m *xrpc.Mission) (err error) {
 	var srcPath = filepath.Join(gopath, "src", cleanRepoName)
 
 	getsrc := func() (err error) {
-		if err = sess.Command("gopm", "get", "-v", "-u", repoAddr).Run(); err != nil {
-			return
-		}
-		if err = sess.Command("gopm", "get", "-v", repoAddr).Run(); err != nil {
+		// if err = sess.Command("gopm", "get", "-v", "-u", repoAddr).Run(); err != nil {
+		// return
+		// }
+		if err = sess.Command("gopm", "get", "-v", repoAddr+"@commit:"+m.CommitId).Run(); err != nil {
 			return
 		}
 		return nil
