@@ -58,12 +58,20 @@ type Task struct {
 	CgoEnable    bool
 	ArchieveAddr string
 
-	Branch   string
-	CommitId string `xorm:"unique(t)"`
+	Branch string
+	Sha    string `xorm:"unique(t)"`
 
 	Status  string
 	Created time.Time `xorm:"created"`
 	Updated time.Time `xorm:"updated"`
+}
+
+type LastRepoUpdate struct {
+	Rid        int64  `xorm:"unique(u)"`
+	Branch     string `xorm:"unique(u)"`
+	Sha        string
+	ZipBallUrl string
+	Updated    time.Time `xorm:"updated"`
 }
 
 var (
@@ -75,7 +83,9 @@ var (
 )
 
 func init() {
-	tables = append(tables, new(Task), new(Repository), new(RepoStatistic), new(DownloadHistory), new(BuildHistory))
+	tables = append(tables, new(Task),
+		new(Repository), new(RepoStatistic), new(LastRepoUpdate),
+		new(DownloadHistory), new(BuildHistory))
 }
 
 func CreateRepository(repoUri string) (*Repository, error) {
@@ -166,6 +176,15 @@ func UpdateTaskStatus(tid int64, status string, output string) error {
 	pubAddr := ""
 	if status == ST_DONE {
 		pubAddr = output
+		tk, _ := GetTaskById(tid)
+		condi := LastRepoUpdate{Rid: tk.Rid, Branch: tk.Branch, Sha: tk.Sha}
+		lr := condi
+		if has, err := orm.Get(&lr); err == nil && has {
+			orm.Update(&LastRepoUpdate{ZipBallUrl: pubAddr}, &condi)
+		} else {
+			condi.ZipBallUrl = pubAddr
+			orm.Insert(&condi)
+		}
 	}
 	if _, err := orm.Id(tid).Update(&Task{Status: status, ArchieveAddr: pubAddr}); err != nil {
 		return err

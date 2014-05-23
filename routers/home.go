@@ -34,7 +34,8 @@ func NewBuild(rf RepositoryForm, ctx *middleware.Context) {
 	task := new(models.Task)
 	task.Arch = "amd64"
 	task.Os = "darwin"
-	task.CommitId = "xxxxxx"
+	task.Branch = "master"
+	task.Sha = "xxxxxx"
 	task.CgoEnable = false
 	task.Rid = rf.Rid
 	if _, err := models.CreateTask(task); err != nil {

@@ -48,8 +48,9 @@ func work(m *xrpc.Mission) (err error) {
 		checkError(err)
 	}
 	defer func() {
+		fmt.Println("DONE", err)
 		if err != nil {
-			notify(models.ST_ERROR, "", err.Error())
+			notify(models.ST_ERROR, err.Error())
 		}
 	}()
 	// prepare shell session
@@ -76,7 +77,8 @@ func work(m *xrpc.Mission) (err error) {
 		// if err = sess.Command("gopm", "get", "-v", "-u", repoAddr).Run(); err != nil {
 		// return
 		// }
-		if err = sess.Command("gopm", "get", "-v", repoAddr+"@commit:"+m.CommitId).Run(); err != nil {
+		if err = sess.Command("gopm", "get", "-g", "-v", repoAddr).Run(); err != nil {
+			// if err = sess.Command("gopm", "get", "-v", repoAddr+"@commit:"+m.Sha).Run(); err != nil {
 			return
 		}
 		return nil
@@ -137,7 +139,7 @@ func work(m *xrpc.Mission) (err error) {
 	var outFullPath = filepath.Join(srcPath, outFile)
 
 	notify(models.ST_BUILDING, "start building")
-	err = sess.Command(PROGRAM, "pack", "-o", outFile, sh.Dir(srcPath)).Run()
+	err = sess.Command(PROGRAM, "pack", "--gom", "gopm", "-o", outFile, sh.Dir(srcPath)).Run()
 	notify(models.ST_BUILDING, string(buffer.Bytes()))
 	if err != nil {
 		log.Error(err)

@@ -35,9 +35,9 @@ type Mission struct {
 	Idle time.Duration
 	Mid  int64
 
-	Repo     string
-	Branch   string
-	CommitId string
+	Repo   string
+	Branch string
+	Sha    string
 
 	CgoEnable bool
 	Os, Arch  string
@@ -73,7 +73,7 @@ func (r *Rpc) GetMission(args *HostInfo, rep *Mission) error {
 		rep.Mid = task.Id
 		rep.Repo = task.Repo.Uri
 		rep.Branch = task.Branch
-		rep.CommitId = task.CommitId
+		rep.Sha = task.Sha
 		return nil
 	case models.ErrTaskNotAvaliable:
 		rep.Idle = time.Second * 3
