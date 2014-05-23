@@ -3,6 +3,7 @@ package base
 import (
 	"fmt"
 	"html/template"
+	"regexp"
 	"strings"
 	"time"
 
@@ -15,7 +16,7 @@ var TemplateFuncs = template.FuncMap{
 	"timesince": timeSince,
 }
 
-func ansi2html(s string) string {
+func ansi2html(s string) template.HTML {
 	p := "\033[1;"
 	h := `<span style="color:%s">`
 	colorMap := map[string]string{
@@ -31,7 +32,8 @@ func ansi2html(s string) string {
 		s = strings.Replace(s, p+num+"m", fmt.Sprintf(h, color), -1)
 	}
 	s = strings.Replace(s, "\033[0m", "</span>", -1)
-	return s
+	s = regexp.MustCompile("(\033"+`[;\[\d]+?m)+`).ReplaceAllString(s, `<span style="color:black">`)
+	return template.HTML(s)
 }
 
 func timeSince(t time.Time) string {

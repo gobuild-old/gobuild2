@@ -81,12 +81,12 @@ func work(m *xrpc.Mission) (err error) {
 		}
 		return nil
 	}
-	getsrc = func() (err error) {
-		if err = sess.Command("go", "get", "-u", "-v", repoAddr).Run(); err != nil {
-			return
-		}
-		return nil
-	}
+	// getsrc = func() (err error) {
+	// 	if err = sess.Command("go", "get", "-u", "-v", repoAddr).Run(); err != nil {
+	// 		return
+	// 	}
+	// 	return nil
+	// }
 
 	// get source code
 	notify(models.ST_RETRIVING, "start get source")
