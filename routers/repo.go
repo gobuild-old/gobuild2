@@ -35,9 +35,10 @@ func Repo(ctx *middleware.Context, params martini.Params, req *http.Request) {
 		log.Errorf("get tasks by id, error: %v", err)
 	}
 	recentTask, _ := models.GetTaskById(1)
-	ctx.HTML(200, "repo", map[string]interface{}{
+	ctx.Data = map[string]interface{}{
 		"Repo":       repo,
 		"RecentTask": recentTask,
 		"Tasks":      tasks,
-	})
+	}
+	ctx.HTML(200, "repo")
 }

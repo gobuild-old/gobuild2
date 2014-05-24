@@ -21,8 +21,9 @@ func History(ctx *middleware.Context, params martini.Params, req *http.Request) 
 	if err != nil {
 		log.Errorf("get task history error: %v", err)
 	}
-	ctx.HTML(200, "history", map[string]interface{}{
+	ctx.Data = map[string]interface{}{
 		"Task":    task,
 		"History": history,
-	})
+	}
+	ctx.HTML(200, "history")
 }

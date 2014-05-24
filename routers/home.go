@@ -51,18 +51,22 @@ func ForceRebuild(tf TaskForm, ctx *middleware.Context) {
 	ctx.Redirect(302, "/history?id="+strconv.Itoa(int(tf.Tid)))
 }
 
-func Home(ctx *middleware.Context) { //r render.Render) {
+func Home(ctx *middleware.Context) {
 	pv := models.RefreshPageView("/")
 	repos, err := models.GetAllRepos(50, 0)
 	if err != nil {
 		log.Errorf("get repos from db error: %v", err)
 	}
-	ctx.HTML(200, "home", map[string]interface{}{
-		"Repos": repos,
-		"PV":    pv,
-	})
+	ctx.Data["Title"] = "home"
+	ctx.Data["Repos"] = repos
+	ctx.Data["PV"] = pv
+	ctx.HTML(200, "home")
 }
 
 func Ruok() string {
 	return "imok"
+}
+
+func NotFound(ctx *middleware.Context) {
+	ctx.Handle(404, "Where you got this page", nil)
 }

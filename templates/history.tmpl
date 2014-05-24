@@ -6,24 +6,27 @@
 		<h4>{{.Task.Repo.Uri}}<a class="pull-right" href="{{.Task.ArchieveAddr}}">download <span class="glyphicon glyphicon-arrow-down"></span></a></h4>
 		<div>
 			<p>
-				task-id: {{.Task.Id}}<br/>
-				commits: <br/>
-				start-time: {{.Task.Created }}<br/>
-				last-update: {{.Task.Updated | timesince}} ago<br/>
-				status: {{.Task.Status}}<br/>
+			task-id: {{.Task.Id}}<br/>
+			commits: <br/>
+			start-time: {{.Task.Created }}<br/>
+			last-update: {{.Task.Updated | timesince}} ago<br/>
+			status: {{.Task.Status}}<br/>
+			<form method="post" action="/api/force-rebuild">
+				<input type="hidden" name="tid" value="{{.Task.Id}}">
+				<button class="btn btn-default btn-xs">force-rebuid</button>
+			</form>
 			</p>
 		</div>
 	</div>
-
 	{{range .History}}
 	<div class="panel panel-default">
 		<div class="panel-heading">status: {{.Status}}<span class="pull-right">{{.Updated}}</span></div>
 		{{if .Output}}
 		<div class="panel-body">
-			<pre>{{.Output | ansi2html}}</pre>
-  		</div>
-  		{{end}}
+<pre>{{.Output | ansi2html}}</pre>
+		</div>
+{{end}}
 	</div>
-	{{end}}
+{{end}}
 </div>
 {{template "base/footer" .}}

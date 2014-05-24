@@ -60,6 +60,10 @@ func Action(c *cli.Context) {
 	m.Post("/api/build", binding.Bind(routers.RepositoryForm{}), routers.NewBuild)
 	m.Post("/api/force-rebuild", binding.Bind(routers.TaskForm{}), routers.ForceRebuild)
 	m.Get("/api/pkglist", routers.PkgList)
+
+	// Not found handler.
+	m.NotFound(routers.NotFound)
+
 	http.Handle("/", m)
 
 	if err = models.ResetAllTaskStatus(); err != nil {
