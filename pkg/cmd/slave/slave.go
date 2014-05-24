@@ -128,18 +128,12 @@ func work(m *xrpc.Mission) (err error) {
 	}
 	buffer.Reset()
 
-	// TODO: change to right branch
-	// extention := "tar.gz"
-	// if m.Os == "windows" {
-	// extention = "zip"
-	// }
-
 	extention := "zip"
 	var outFile = fmt.Sprintf("%s-%s-%s.%s", filepath.Base(cleanRepoName), m.Os, m.Arch, extention)
 	var outFullPath = filepath.Join(srcPath, outFile)
 
 	notify(models.ST_BUILDING, "start building")
-	err = sess.Command("gopm", "build", "-u", sh.Dir(srcPath)).Run()
+	err = sess.Command("gopm", "build", "-u", "-v", sh.Dir(srcPath)).Run()
 	if err != nil {
 		log.Errorf("gopm build error: %v", err)
 		return
