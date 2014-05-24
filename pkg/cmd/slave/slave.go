@@ -136,6 +136,7 @@ func work(m *xrpc.Mission) (err error) {
 	err = sess.Command("gopm", "build", "-u", "-v", sh.Dir(srcPath)).Run()
 	if err != nil {
 		log.Errorf("gopm build error: %v", err)
+		notify(models.ST_BUILDING, string(buffer.Bytes()))
 		return
 	}
 	err = sess.Command(PROGRAM, "pack", "--nobuild", "-o", outFile, sh.Dir(srcPath)).Run()
