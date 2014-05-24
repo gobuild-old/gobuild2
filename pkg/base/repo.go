@@ -22,6 +22,7 @@ type CVSInfo struct {
 	Owner          string
 	Branch         string
 	RepoName       string
+	RepoSubPath    string
 }
 
 var (
@@ -40,7 +41,8 @@ func ParseCvsURI(uri string) (*CVSInfo, error) {
 			Provide:        "github.com",
 			VersionControl: "git",
 			Owner:          fields[1],
-			RepoName:       strings.Join(fields[2:], "/"),
+			RepoName:       fields[2],
+			RepoSubPath:    strings.Join(fields[2:], "/"),
 		}, nil
 	}
 	return nil, ErrCvsNotRecognized
