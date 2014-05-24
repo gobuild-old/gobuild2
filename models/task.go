@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strings"
 	"time"
+	"code.google.com/p/goauth2/oauth"
 
 	"github.com/gobuild/gobuild2/pkg/gowalker"
 	"github.com/google/go-github/github"
@@ -91,6 +92,16 @@ func init() {
 		new(DownloadHistory), new(BuildHistory))
 }
 
+const githubPublicAccessToken = "68655dcb3723d24e2fbe2cb450747c14b966eac3"
+
+var gclient *github.Client //= github.NewClient(httpClient)
+func init() {
+	t := &oauth.Transport{
+		Token: &oauth.Token{AccessToken: githubPublicAccessToken},
+	}
+	gclient = github.NewClient(t.Client())
+}
+
 func CreateRepository(repoUri string) (*Repository, error) {
 	pkginfo, err := gowalker.GetCmdPkgInfo(repoUri)
 	if err != nil {
@@ -109,11 +120,10 @@ func CreateRepository(repoUri string) (*Repository, error) {
 		// comunicate with github
 		fields := strings.Split(repoUri, "/")
 		owner, repoName := fields[1], fields[2]
-		client := github.NewClient(nil)
-		repo, _, err := client.Repositories.Get(owner, repoName)
+		repo, _, err := gclient.Repositories.Get(owner, repoName)
 		if err != nil {
 			log.Errorf("get information from github error: %v", err)
-		}else {
+		} else {
 			r.Brief = *repo.Description
 		}
 	}

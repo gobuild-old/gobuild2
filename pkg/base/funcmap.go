@@ -23,7 +23,7 @@ func ansi2html(s string) template.HTML {
 		"30": "#CCCCCC", //"gray",
 		"31": "red",
 		"32": "green",
-		"33": "#FFDEAD", //"yellow",
+		"33": "#FFFF00", //"yellow",
 		"34": "#3366FF", //"blue",
 		"35": "#9933CC", //"purple",
 		"36": "#66CCFF",
