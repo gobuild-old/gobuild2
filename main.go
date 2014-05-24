@@ -46,6 +46,7 @@ func init() {
 				cli.StringFlag{"depth", "3", "depth of file to walk"},
 				cli.StringFlag{"output,o", program + ".zip", "target file"},
 				cli.StringFlag{"gom", "go", "go package manage program"},
+				cli.BoolFlag{"nobuild", "donot call go build when pack"},
 			},
 		},
 		cli.Command{

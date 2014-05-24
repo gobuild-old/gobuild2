@@ -139,7 +139,12 @@ func work(m *xrpc.Mission) (err error) {
 	var outFullPath = filepath.Join(srcPath, outFile)
 
 	notify(models.ST_BUILDING, "start building")
-	err = sess.Command(PROGRAM, "pack", "--gom", "gopm", "-o", outFile, sh.Dir(srcPath)).Run()
+	err = sess.Command("gopm", "build", "-u", sh.Dir(srcPath)).Run()
+	if err != nil {
+		log.Errorf("gopm build error: %v", err)
+		return
+	}
+	err = sess.Command(PROGRAM, "pack", "--nobuild", "-o", outFile, sh.Dir(srcPath)).Run()
 	notify(models.ST_BUILDING, string(buffer.Bytes()))
 	if err != nil {
 		log.Error(err)

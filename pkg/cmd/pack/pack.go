@@ -57,6 +57,7 @@ func Action(c *cli.Context) {
 	var depth = c.Int("depth")
 	var output = c.String("output")
 	var gom = c.String("gom")
+	var nobuild = c.Bool("nobuild")
 
 	var err error
 	defer func() {
@@ -122,8 +123,10 @@ func Action(c *cli.Context) {
 	}
 
 	// build source
-	if err = sess.Command(gom, "build").Run(); err != nil {
-		return
+	if !nobuild {
+		if err = sess.Command(gom, "build").Run(); err != nil {
+			return
+		}
 	}
 	cwd, _ := os.Getwd()
 	program := filepath.Base(cwd)
