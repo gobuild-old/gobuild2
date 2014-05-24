@@ -2,9 +2,11 @@ package models
 
 import (
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/gobuild/gobuild2/pkg/gowalker"
+	"github.com/google/go-github/github"
 	"github.com/qiniu/log"
 )
 
@@ -13,6 +15,7 @@ const (
 	ST_PENDING    = "pending"
 	ST_RETRIVING  = "retriving"
 	ST_BUILDING   = "building"
+	ST_PACKING    = "packing"
 	ST_PUBLISHING = "publishing"
 	ST_DONE       = "done"
 	ST_ERROR      = "error"
@@ -99,7 +102,18 @@ func CreateRepository(repoUri string) (*Repository, error) {
 		return r, nil
 	}
 	r.Uri = repoUri
-	r.Brief = pkginfo.Description //"todo, not get"
+
+	// description
+	r.Brief = pkginfo.Description
+	if strings.HasPrefix(repoUri, "github.com") {
+		// comunicate with github
+		fields := strings.Split(repoUri, "/")
+		owner, repoName := fields[1], fields[2]
+		client := github.NewClient(nil)
+		if repo, _, err := client.Repositories.Get(owner, repoName); err == nil {
+			r.Brief = *repo.Description
+		}
+	}
 	_, err = orm.Insert(r)
 	return r, err
 }

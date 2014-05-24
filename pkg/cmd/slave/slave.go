@@ -61,7 +61,7 @@ func work(m *xrpc.Mission) (err error) {
 	sess.ShowCMD = true
 	var gopath, _ = filepath.Abs(TMPDIR)
 	sess.SetEnv("GOPATH", gopath)
-	sess.SetEnv("CGO_ENABLE", "")
+	sess.SetEnv("CGO_ENABLE", "0")
 	if m.CgoEnable {
 		sess.SetEnv("CGO_ENABLE", "1")
 	}
@@ -83,44 +83,33 @@ func work(m *xrpc.Mission) (err error) {
 		}
 		return nil
 	}
-	// getsrc = func() (err error) {
-	// 	if err = sess.Command("go", "get", "-u", "-v", repoAddr).Run(); err != nil {
-	// 		return
-	// 	}
-	// 	return nil
-	// }
 
-	// get source code
-	notify(models.ST_RETRIVING, "start get source")
-	var done = make(chan bool)
-	// var msgQueue = make(chan NTMsg)
-	// go func() {
-	// quit := make(chan bool)
-	// 	for {
-	// 		select {
-	// 		case msg := <-msgQueue:
-	// 			notify(msg.Status, msg.Output, msg.Extra)
-	// 		case <- quic:
-	// quit <- true
-	//			return
-	// 		}
-	// 	}
-	// }()
-	// notify message queue
-	go func() {
-		for {
-			select {
-			case <-done:
-				done <- true
-				return
-			case <-time.After(2 * time.Second):
-				notify(models.ST_RETRIVING, string(buffer.Bytes()))
+	GoInterval := func(dur time.Duration, f func()) chan bool {
+		done := make(chan bool)
+		go func() {
+			for {
+				select {
+				case <-done:
+					return
+				case <-time.After(dur):
+					f()
+				}
 			}
-		}
-	}()
+		}()
+		return done
+	}
+
+	newNotify := func(status string, buf *bytes.Buffer) chan bool {
+		return GoInterval(time.Second*2, func() {
+			notify(status, string(buf.Bytes()))
+		})
+	}
+
+	notify(models.ST_RETRIVING, "start get source")
+	var done chan bool
+	done = newNotify(models.ST_RETRIVING, buffer)
 	err = getsrc()
 	done <- true
-	<-done
 	notify(models.ST_RETRIVING, string(buffer.Bytes()))
 	if err != nil {
 		log.Errorf("getsource err: %v", err)
@@ -132,15 +121,19 @@ func work(m *xrpc.Mission) (err error) {
 	var outFile = fmt.Sprintf("%s-%s-%s.%s", filepath.Base(cleanRepoName), m.Os, m.Arch, extention)
 	var outFullPath = filepath.Join(srcPath, outFile)
 
-	notify(models.ST_BUILDING, "start building")
+	// notify(models.ST_BUILDING, "start building")
+	done = newNotify(models.ST_BUILDING, buffer)
 	err = sess.Command("gopm", "build", "-u", "-v", sh.Dir(srcPath)).Run()
+	done <- true
+	notify(models.ST_BUILDING, string(buffer.Bytes()))
 	if err != nil {
 		log.Errorf("gopm build error: %v", err)
-		notify(models.ST_BUILDING, string(buffer.Bytes()))
 		return
 	}
+	buffer.Reset()
+
 	err = sess.Command(PROGRAM, "pack", "--nobuild", "-o", outFile, sh.Dir(srcPath)).Run()
-	notify(models.ST_BUILDING, string(buffer.Bytes()))
+	notify(models.ST_PACKING, string(buffer.Bytes()))
 	if err != nil {
 		log.Error(err)
 		return
