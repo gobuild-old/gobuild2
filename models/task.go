@@ -4,8 +4,9 @@ import (
 	"errors"
 	"strings"
 	"time"
-	"code.google.com/p/goauth2/oauth"
 
+	"code.google.com/p/goauth2/oauth"
+	"github.com/gobuild/gobuild2/pkg/base"
 	"github.com/gobuild/gobuild2/pkg/gowalker"
 	"github.com/google/go-github/github"
 	"github.com/qiniu/log"
@@ -26,6 +27,7 @@ type Repository struct {
 	Id      int64
 	Uri     string `xorm:"unique(r)"`
 	Brief   string
+	IsCgo   bool
 	Created time.Time `xorm:"created"`
 }
 
@@ -54,13 +56,14 @@ type BuildHistory struct {
 }
 
 type Task struct {
-	Id           int64
-	Rid          int64       `xorm:"unique(t)"`
-	Repo         *Repository `xorm:"-"`
-	Os           string      `xorm:"unique(t)"`
-	Arch         string      `xorm:"unique(t)"`
-	CgoEnable    bool
-	ArchieveAddr string
+	Id            int64
+	Rid           int64       `xorm:"unique(t)"`
+	Repo          *Repository `xorm:"-"`
+	Os            string      `xorm:"unique(t)"`
+	Arch          string      `xorm:"unique(t)"`
+	CgoEnable     bool
+	CommitMessage string
+	ArchieveAddr  string
 
 	Branch string
 	Sha    string `xorm:"unique(t)"`
@@ -73,9 +76,15 @@ type Task struct {
 type LastRepoUpdate struct {
 	Rid        int64  `xorm:"unique(u)"`
 	Branch     string `xorm:"unique(u)"`
+	OsArch     string `xorm:"unique(u)"`
 	Sha        string
 	ZipBallUrl string
 	Updated    time.Time `xorm:"updated"`
+}
+
+func GetAllLastRepoUpdate(rid int64) (us []LastRepoUpdate, err error) {
+	err = orm.Find(&us, &LastRepoUpdate{Rid: rid})
+	return
 }
 
 var (
@@ -113,7 +122,7 @@ func CreateRepository(repoUri string) (*Repository, error) {
 		return r, nil
 	}
 	r.Uri = repoUri
-
+	r.IsCgo = pkginfo.IsCgo
 	// description
 	r.Brief = pkginfo.Description
 	if strings.HasPrefix(repoUri, "github.com") {
@@ -129,6 +138,34 @@ func CreateRepository(repoUri string) (*Repository, error) {
 	}
 	_, err = orm.Insert(r)
 	return r, err
+}
+
+func CreateNewBuilding(rid int64, branch string, os, arch string) (err error) {
+	repo, err := GetRepositoryById(rid)
+	if err != nil {
+		return
+	}
+	task := &Task{
+		Rid:       rid,
+		Branch:    branch,
+		Os:        os,
+		Arch:      arch,
+		CgoEnable: repo.IsCgo,
+	}
+	var cvsinfo *base.CVSInfo
+	if cvsinfo, err = base.ParseCvsURI(repo.Uri); err != nil {
+		return
+	}
+	info, _, err := gclient.Repositories.GetBranch(cvsinfo.Owner, cvsinfo.RepoName, branch)
+	if err != nil {
+		return
+	}
+	task.Sha = *info.Commit.SHA
+	if info.Commit.Message != nil {
+		task.CommitMessage = *info.Commit.Message // info.Commit.String() //"" // *info.Commit.Message
+	}
+	_, err = CreateTask(task)
+	return
 }
 
 func GetAllRepos(count, start int) ([]Repository, error) {
@@ -204,13 +241,19 @@ func UpdateTaskStatus(tid int64, status string, output string) error {
 	if status == ST_DONE {
 		pubAddr = output
 		tk, _ := GetTaskById(tid)
-		condi := LastRepoUpdate{Rid: tk.Rid, Branch: tk.Branch, Sha: tk.Sha}
+		condi := LastRepoUpdate{
+			Rid:    tk.Rid,
+			Branch: tk.Branch,
+			OsArch: tk.Os + "-" + tk.Arch}
 		lr := condi
 		if has, err := orm.Get(&lr); err == nil && has {
-			orm.Update(&LastRepoUpdate{ZipBallUrl: pubAddr}, &condi)
+			orm.Update(&LastRepoUpdate{Sha: tk.Sha, ZipBallUrl: pubAddr}, &condi)
 		} else {
 			condi.ZipBallUrl = pubAddr
-			orm.Insert(&condi)
+			condi.Sha = tk.Sha
+			if _, err := orm.Insert(&condi); err != nil {
+				log.Errorf("insert last_repo_update failed: %v", err)
+			}
 		}
 	}
 	if _, err := orm.Id(tid).Update(&Task{Status: status, ArchieveAddr: pubAddr}); err != nil {

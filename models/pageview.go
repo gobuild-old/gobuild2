@@ -32,7 +32,7 @@ func drainPv() {
 
 var pvOnce sync.Once
 
-func RefreshPageView(uri string) int64 {
+func RefreshPageView(uri string, add ...int64) int64 {
 	pvOnce.Do(func() {
 		orm.Insert(&PageView{uri, 0})
 		go drainPv()
@@ -46,6 +46,10 @@ func RefreshPageView(uri string) int64 {
 		}
 		pageView[uri] = pv.TotalCount
 	}
-	pageView[uri] += 1
+	if len(add) == 0 {
+		pageView[uri] += 1
+	} else {
+		pageView[uri] += add[0]
+	}
 	return pageView[uri]
 }

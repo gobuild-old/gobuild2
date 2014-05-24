@@ -31,15 +31,16 @@ func NewRepo(rf RepoInfoForm, ctx *middleware.Context) {
 }
 
 func NewBuild(rf RepositoryForm, ctx *middleware.Context) {
-	task := new(models.Task)
-	task.Arch = "amd64"
-	task.Os = "darwin"
-	task.Branch = "master"
-	task.Sha = "xxxxxx"
-	task.CgoEnable = false
-	task.Rid = rf.Rid
-	if _, err := models.CreateTask(task); err != nil {
-		log.Errorf("create module error: %v", err)
+	oas := map[string]string{
+		"windows": "386",
+		"linux":   "386",
+		"darwin":  "amd64",
+	}
+	for os, arch := range oas {
+		err := models.CreateNewBuilding(rf.Rid, "master", os, arch)
+		if err != nil {
+			log.Errorf("create module error: %v", err)
+		}
 	}
 	ctx.Redirect(302, "/repo?id="+strconv.Itoa(int(rf.Rid)))
 }

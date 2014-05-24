@@ -7,12 +7,12 @@
 <div>
 <form role="form" method="post" action="/new-repo">
 	<label>Repo Name</label>
-	<input class="form-control" type="input" name="repo-name" placeholder="github.com/.../..." />
+	<input class="form-control" type="input" name="repo-name" placeholder="github.com/.../..." required autofocus/>
 	<button class="btn btn-default">Add Repository</button>
 </form>
 </div>
 
-<h3>Repository List<span class="pull-right"><input class="form-control" type="input" placeholder="search"/></span></h3>
+<h3>Repo List<span class="pull-right"><input class="form-control" type="input" placeholder="search"/></span></h3>
 <div>
 	<ul class="list-group">
 		{{range .Repos}}

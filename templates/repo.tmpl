@@ -9,11 +9,16 @@
 <div class="row">
 	<div class="col-md-8">
 		<div class="well">
-			sha: jghasdfasdfkasdfasdfasd<br>
+			cgo: {{.Repo.IsCgo}}<br>
+			<del>sha: jghasdfasdfkasdfasdfasd<br>
 			last commit: 2day ago<br>
 			desc: fix bug<br>
-			last build 2min ago<br>
-			total download: 1000<br>
+			last build 2min ago<br></del>
+			total download: {{.DownCnt}}<br>
+			<b>last build</b><br>
+			{{range .Last}}
+			{{.OsArch}} - {{.Updated | timesince}} Ago<br>
+			{{end}}
 			<form method="post" action="/api/build">
 				<input type="hidden" name="rid" value="{{.Repo.Id}}">
 				<button class="btn-sm btn btn-default">build now</button>

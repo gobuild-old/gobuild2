@@ -20,6 +20,7 @@ func Download(ctx *middleware.Context) {
 		http.Error(ctx.ResponseWriter, err.Error(), http.StatusNotFound)
 		return
 	}
+	models.RefreshPageView("/d/" + ctx.Query("rid"))
 	ctx.Redirect(302, task.ArchieveAddr)
 }
 
@@ -39,6 +40,12 @@ func Repo(ctx *middleware.Context, params martini.Params, req *http.Request) {
 		"Repo":       repo,
 		"RecentTask": recentTask,
 		"Tasks":      tasks,
+		"DownCnt":    models.RefreshPageView("/d/"+ctx.Query("id"), 0),
 	}
+	rus, err := models.GetAllLastRepoUpdate(rid)
+	if err != nil {
+		log.Error("get last repo error: %v", err)
+	}
+	ctx.Data["Last"] = rus
 	ctx.HTML(200, "repo")
 }
