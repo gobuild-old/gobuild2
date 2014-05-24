@@ -110,7 +110,10 @@ func CreateRepository(repoUri string) (*Repository, error) {
 		fields := strings.Split(repoUri, "/")
 		owner, repoName := fields[1], fields[2]
 		client := github.NewClient(nil)
-		if repo, _, err := client.Repositories.Get(owner, repoName); err == nil {
+		repo, _, err := client.Repositories.Get(owner, repoName)
+		if err != nil {
+			log.Errorf("get information from github error: %v", err)
+		}else {
 			r.Brief = *repo.Description
 		}
 	}
