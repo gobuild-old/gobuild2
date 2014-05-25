@@ -47,6 +47,7 @@ func init() {
 				cli.StringFlag{"output,o", program + ".zip", "target file"},
 				cli.StringFlag{"gom", "go", "go package manage program"},
 				cli.BoolFlag{"nobuild", "donot call go build when pack"},
+				cli.StringSliceFlag{"add,a", &cli.StringSlice{}, "add file"},
 			},
 		},
 		cli.Command{

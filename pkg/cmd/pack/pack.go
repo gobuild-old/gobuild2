@@ -58,6 +58,7 @@ func Action(c *cli.Context) {
 	var output = c.String("output")
 	var gom = c.String("gom")
 	var nobuild = c.Bool("nobuild")
+	var adds = c.StringSlice("add")
 
 	var err error
 	defer func() {
@@ -84,6 +85,7 @@ func Action(c *cli.Context) {
 		pcfg = config.DefaultPcfg
 	}
 	log.Debug("config:", pcfg)
+	pcfg.Filesets.Includes = append(pcfg.Filesets.Includes, adds...)
 
 	var skips []*regexp.Regexp
 	for _, str := range pcfg.Filesets.Excludes {

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -76,10 +77,6 @@ func work(m *xrpc.Mission) (err error) {
 	var srcPath = filepath.Join(gopath, "src", repoName)
 
 	getsrc := func() (err error) {
-		// if err = sess.Command("gopm", "get", "-v", "-u", repoName).Run(); err != nil {
-		// return
-		// }
-		// if err = sess.Command("gopm", "get", "-g", "-v", repoName).Run(); err != nil {
 		if err = sess.Command("gopm", "get", "-v", "-g", repoName+"@commit:"+m.Sha, sh.Dir(gopath)).Run(); err != nil {
 			return
 		}
@@ -134,7 +131,11 @@ func work(m *xrpc.Mission) (err error) {
 	}
 	buffer.Reset()
 
-	err = sess.Command(PROGRAM, "pack", "--nobuild", "-o", outFile, sh.Dir(srcPath)).Run()
+	// write extra pkginfo
+	ioutil.WriteFile(filepath.Join(srcPath, "gobuild.pkginfo"), m.PkgInfo, 0644)
+
+	err = sess.Command(PROGRAM, "pack",
+		"--nobuild", "-a", "gobuild.pkginfo", "-o", outFile, sh.Dir(srcPath)).Run()
 	notify(models.ST_PACKING, string(buffer.Bytes()))
 	if err != nil {
 		log.Error(err)
@@ -202,9 +203,7 @@ func Action(c *cli.Context) {
 			continue
 		}
 
-		//log.Infof("reply: %v", mission)
 		if mission.Idle != 0 {
-			//log.Infof("Idle for next reply: %v", mission.Idle)
 			fmt.Print(".")
 			time.Sleep(mission.Idle)
 			continue
