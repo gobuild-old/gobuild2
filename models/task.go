@@ -75,11 +75,17 @@ type Task struct {
 
 type LastRepoUpdate struct {
 	Rid        int64  `xorm:"unique(u)"`
-	Branch     string `xorm:"unique(u)"`
-	OsArch     string `xorm:"unique(u)"`
+	TagBranch  string `xorm:"unique(u)"`
+	Os         string `xorm:"unique(u)"`
+	Arch       string `xorm:"unique(u)"`
 	Sha        string
 	ZipBallUrl string
 	Updated    time.Time `xorm:"updated"`
+}
+
+func GetAllLastRepoByOsArch(os, arch string) (us []LastRepoUpdate, err error) {
+	err = orm.Find(&us, &LastRepoUpdate{Os: os, Arch: arch})
+	return us, err
 }
 
 func GetAllLastRepoUpdate(rid int64) (us []LastRepoUpdate, err error) {
@@ -242,9 +248,10 @@ func UpdateTaskStatus(tid int64, status string, output string) error {
 		pubAddr = output
 		tk, _ := GetTaskById(tid)
 		condi := LastRepoUpdate{
-			Rid:    tk.Rid,
-			Branch: tk.Branch,
-			OsArch: tk.Os + "-" + tk.Arch}
+			Rid:       tk.Rid,
+			TagBranch: tk.Branch,
+			Os:        tk.Os,
+			Arch:      tk.Arch}
 		lr := condi
 		if has, err := orm.Get(&lr); err == nil && has {
 			orm.Update(&LastRepoUpdate{Sha: tk.Sha, ZipBallUrl: pubAddr}, &condi)

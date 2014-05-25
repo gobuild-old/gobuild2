@@ -17,7 +17,7 @@
 			total download: {{.DownCnt}}<br>
 			<b>last build</b><br>
 			{{range .Last}}
-			{{.OsArch}} - {{.Updated | timesince}} Ago<br>
+			{{.Os}}-{{.Arch}} - {{.Updated | timesince}} Ago<br>
 			{{end}}
 			<form method="post" action="/api/build">
 				<input type="hidden" name="rid" value="{{.Repo.Id}}">

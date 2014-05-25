@@ -3,7 +3,9 @@ package routers
 import (
 	"time"
 
+	"github.com/gobuild/gobuild2/models"
 	"github.com/gobuild/middleware"
+	"github.com/qiniu/log"
 )
 
 type PackageItem struct {
@@ -22,12 +24,25 @@ type Branch struct {
 func fmtTime(t time.Time) string { return t.UTC().Format(time.RFC3339) }
 
 func PkgList(ctx *middleware.Context) {
+	rs, err := models.GetAllLastRepoByOsArch(ctx.Query("os"), ctx.Query("arch"))
+	if err != nil {
+		ctx.JSON(400, nil)
+		return
+	}
 	var result []PackageItem
-	result = append(result, PackageItem{
-		Name:        "github.com/nsf/gocode",
-		Description: "golang code complete",
-		Branches:    []Branch{Branch{"master", "abcdeftg", fmtTime(time.Now())}},
-		// Updated:     fmtTime(time.Now()),
-	})
+	for _, lr := range rs {
+		repo, err := models.GetRepositoryById(lr.Rid)
+		if err != nil {
+			log.Errorf("a missing repo in last_repo_update: %v", lr)
+			continue
+		}
+		result = append(result, PackageItem{
+			Name:        repo.Uri,                                                    // "github.com/nsf/gocode",
+			Description: repo.Brief,                                                  // "golang code complete",
+			Branches:    []Branch{Branch{lr.TagBranch, lr.Sha, fmtTime(lr.Updated)}}, // "master", "abcdeftg", fmtTime(time.Now())}},
+			// Updated:     fmtTime(time.Now()),
+		})
+
+	}
 	ctx.JSON(200, result)
 }

@@ -26,7 +26,7 @@ func InitDB() (err error) {
 	dbCfg := config.Config.Database
 	switch dbCfg.DbType {
 	case "mysql":
-		orm, err = xorm.NewEngine("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&loc=PRC",
+		orm, err = xorm.NewEngine("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8",
 			dbCfg.User, dbCfg.Password, dbCfg.Host, getwith(dbCfg.Port, "3306"), dbCfg.Name))
 	case "postgres":
 		cnnstr := fmt.Sprintf("user=%s password=%s host=%s port=%s dbname=%s sslmode=%s",
