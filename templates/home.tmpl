@@ -1,5 +1,11 @@
 {{template "base/header" .}}
 {{template "base/navbar" .}}
+<style>
+.green{
+	color: green;
+}
+</style>
+
 <div class="container">
 <div>
 	<p><b>PV:</b>{{.PV}}</p>
@@ -7,7 +13,7 @@
 <div>
 <form role="form" method="post" action="/new-repo">
 	<label>Repo Name</label>
-	<input class="form-control" type="input" name="repo-name" placeholder="github.com/.../..." required />
+	<input class="form-control" type="input" name="repo-name" placeholder="beego/bee - and it's ok without prefix github.com" required />
 	<button class="btn btn-default">Add Repository</button>
 </form>
 </div>
@@ -16,7 +22,11 @@
 <div>
 	<ul class="list-group">
 		{{range .Repos}}
-		<li class="list-group-item">[{{.Id}}] <a href="/repo?id={{.Id}}">{{.Uri}}</a> - {{.Brief}}</li>
+		<li class="list-group-item">
+			[{{.Id}}] 
+			<a class="green" href="https://{{.Uri}}">[github]</a>
+			<a class="green" href="https://gowalker.org/{{.Uri}}">[gowalker]</a>
+			<a href="/repo?id={{.Id}}">{{.Uri}}</a> - {{.Brief}}</li>
 		{{end}}
 	</ul>
 	<ul class="pagination">
