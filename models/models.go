@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/go-xorm/xorm"
 	"github.com/gobuild/gobuild2/pkg/config"
-	"github.com/lunny/xorm"
 )
 
 var (
