@@ -171,8 +171,9 @@ func init() {
 
 func prepare() (err error) {
 	qi := new(xrpc.QiniuInfo)
-	xrpc.Call("GetQiniuInfo", HOSTINFO, qi)
-
+	if err = xrpc.Call("GetQiniuInfo", HOSTINFO, qi); err != nil {
+		return
+	}
 	initQiniu(qi.AccessKey, qi.SecretKey, qi.Bulket)
 
 	TMPDIR, err = filepath.Abs(TMPDIR)
