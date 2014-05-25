@@ -7,14 +7,16 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/Unknwon/com"
 	"github.com/codegangsta/cli"
 	"github.com/codeskyblue/go-sh"
 	"github.com/gobuild/gobuild2/models"
 	"github.com/gobuild/gobuild2/pkg/xrpc"
-	"github.com/qiniu/log"
+	"github.com/gobuild/log"
 )
 
 var (
@@ -138,7 +140,12 @@ func work(m *xrpc.Mission) (err error) {
 
 	notify(models.ST_PUBLISHING, "")
 	// timestamp := time.Now().Format("20060102-150405")
-	var cdnPath = fmt.Sprintf("m%d/%s/raw/%s", m.Mid, repoName, outFile)
+	var cdnPath = com.Expand("m{tid}/{reponame}/{branch}/{filename}", map[string]string{
+		"tid":      strconv.Itoa(int(m.Mid)),
+		"reponame": repoName,
+		"branch":   m.Branch,
+		"filename": outFile,
+	}) // fmt.Sprintf("m%d/%s/%s/%s", m.Mid, repoName, outFile)
 	log.Infof("cdn path: %s", cdnPath)
 	var pubAddress string
 	if pubAddress, err = UploadQiniu(outFullPath, cdnPath); err != nil {
