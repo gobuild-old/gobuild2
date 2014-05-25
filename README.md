@@ -7,5 +7,8 @@ new implementation of gobuild
 ## NOTICES
 developing now...
 
+## LICENSE
+gobuild2 is under MIT [license](/LICENSE)
+
 ## Overview
 * See [Trello Board](https://trello.com/b/Ml7fV574/gobuild2) to follow the develop team.
