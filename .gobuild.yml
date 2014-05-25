@@ -2,8 +2,12 @@ filesets:
   includes:
   - README.md
   - LICENSE
+  - templates
+  - public
+  - log
+  - scripts
   excludes:
   - .*.go
 settings:
   goflags: ""
-  yaml"cgoenable": true
+  yaml"cgoenable": false
