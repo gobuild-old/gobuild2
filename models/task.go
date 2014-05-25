@@ -84,7 +84,7 @@ type LastRepoUpdate struct {
 }
 
 func GetAllLastRepoByOsArch(os, arch string) (us []LastRepoUpdate, err error) {
-	err = orm.Find(&us, &LastRepoUpdate{Os: os, Arch: arch})
+	err = orm.Asc("rid").Find(&us, &LastRepoUpdate{Os: os, Arch: arch})
 	return us, err
 }
 
