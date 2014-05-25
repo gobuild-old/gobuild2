@@ -37,7 +37,7 @@ func ansi2html(s string) template.HTML {
 }
 
 func timeSince(t time.Time) string {
-	dur := time.Since(t) + time.Hour*8
+	dur := time.Since(t) //+ time.Hour*8
 	fmt.Println(t, dur+time.Hour*8)
 	return units.HumanDuration(dur)
 }
