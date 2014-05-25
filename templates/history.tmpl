@@ -7,7 +7,7 @@
 		<div>
 			<p>
 			task-id: {{.Task.Id}}<br/>
-			commits: <br/>
+			commits: {{.Task.Sha}}<br/>
 			start-time: {{.Task.Created }}<br/>
 			last-update: {{.Task.Updated | timesince}} ago<br/>
 			status: {{.Task.Status}}<br/>

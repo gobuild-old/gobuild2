@@ -61,6 +61,9 @@ func work(m *xrpc.Mission) (err error) {
 	sess.Stderr = io.MultiWriter(buffer, os.Stderr)
 	sess.ShowCMD = true
 	var gopath, _ = filepath.Abs(TMPDIR)
+	if !sh.Test("dir", gopath) {
+		os.MkdirAll(gopath, 0755)
+	}
 	sess.SetEnv("GOPATH", gopath)
 	sess.SetEnv("CGO_ENABLE", "0")
 	if m.CgoEnable {
@@ -76,8 +79,8 @@ func work(m *xrpc.Mission) (err error) {
 		// if err = sess.Command("gopm", "get", "-v", "-u", repoName).Run(); err != nil {
 		// return
 		// }
-		if err = sess.Command("gopm", "get", "-g", "-v", repoName).Run(); err != nil {
-			// if err = sess.Command("gopm", "get", "-v", repoName+"@commit:"+m.Sha).Run(); err != nil {
+		// if err = sess.Command("gopm", "get", "-g", "-v", repoName).Run(); err != nil {
+		if err = sess.Command("gopm", "get", "-v", "-g", repoName+"@commit:"+m.Sha, sh.Dir(gopath)).Run(); err != nil {
 			return
 		}
 		return nil
