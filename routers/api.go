@@ -15,11 +15,12 @@ type PackageItem struct {
 }
 
 type Branch struct {
-	Name    string `json:"name"`
-	Sha     string `json:"sha"`
-	Updated string `json:"updated"`
-	Os      string `json:"os"`
-	Arch    string `json:"arch"`
+	Name       string `json:"name"`
+	Sha        string `json:"sha"`
+	Updated    string `json:"updated"`
+	Os         string `json:"os"`
+	Arch       string `json:"arch"`
+	ZipBallUrl string `json:"zipball_url"`
 }
 
 func fmtTime(t time.Time) string { return t.UTC().Format(time.RFC3339) }
@@ -37,7 +38,7 @@ func PkgList(ctx *middleware.Context) {
 			if pos := len(result) - 1; pos >= 0 {
 				r := result[pos]
 				r.Branches = append(r.Branches,
-					Branch{lr.TagBranch, lr.Sha, fmtTime(lr.Updated), lr.Os, lr.Arch})
+					Branch{lr.TagBranch, lr.Sha, fmtTime(lr.Updated), lr.Os, lr.Arch, lr.ZipBallUrl})
 			}
 			continue
 		}
@@ -47,7 +48,7 @@ func PkgList(ctx *middleware.Context) {
 			log.Errorf("a missing repo in last_repo_update: %v", lr)
 			continue
 		}
-		br := Branch{lr.TagBranch, lr.Sha, fmtTime(lr.Updated), lr.Os, lr.Arch}
+		br := Branch{lr.TagBranch, lr.Sha, fmtTime(lr.Updated), lr.Os, lr.Arch, lr.ZipBallUrl}
 		result = append(result, &PackageItem{
 			Name:        repo.Uri,   // "github.com/nsf/gocode",
 			Description: repo.Brief, // "golang code complete",
