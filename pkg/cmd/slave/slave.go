@@ -13,7 +13,6 @@ import (
 	"github.com/codegangsta/cli"
 	"github.com/codeskyblue/go-sh"
 	"github.com/gobuild/gobuild2/models"
-	"github.com/gobuild/gobuild2/pkg/base"
 	"github.com/gobuild/gobuild2/pkg/xrpc"
 	"github.com/qiniu/log"
 )
@@ -68,17 +67,15 @@ func work(m *xrpc.Mission) (err error) {
 	sess.SetEnv("GOOS", m.Os)
 	sess.SetEnv("GOARCH", m.Arch)
 
-	var repoAddr = m.Repo
-	var cleanRepoName = base.SanitizedRepoPath(repoAddr)
-
-	var srcPath = filepath.Join(gopath, "src", cleanRepoName)
+	var repoName = m.Repo
+	var srcPath = filepath.Join(gopath, "src", repoName)
 
 	getsrc := func() (err error) {
-		// if err = sess.Command("gopm", "get", "-v", "-u", repoAddr).Run(); err != nil {
+		// if err = sess.Command("gopm", "get", "-v", "-u", repoName).Run(); err != nil {
 		// return
 		// }
-		if err = sess.Command("gopm", "get", "-g", "-v", repoAddr).Run(); err != nil {
-			// if err = sess.Command("gopm", "get", "-v", repoAddr+"@commit:"+m.Sha).Run(); err != nil {
+		if err = sess.Command("gopm", "get", "-g", "-v", repoName).Run(); err != nil {
+			// if err = sess.Command("gopm", "get", "-v", repoName+"@commit:"+m.Sha).Run(); err != nil {
 			return
 		}
 		return nil
@@ -118,7 +115,7 @@ func work(m *xrpc.Mission) (err error) {
 	buffer.Reset()
 
 	extention := "zip"
-	var outFile = fmt.Sprintf("%s-%s-%s.%s", filepath.Base(cleanRepoName), m.Os, m.Arch, extention)
+	var outFile = fmt.Sprintf("%s-%s-%s.%s", filepath.Base(repoName), m.Os, m.Arch, extention)
 	var outFullPath = filepath.Join(srcPath, outFile)
 
 	// notify(models.ST_BUILDING, "start building")
@@ -141,7 +138,7 @@ func work(m *xrpc.Mission) (err error) {
 
 	notify(models.ST_PUBLISHING, "")
 	// timestamp := time.Now().Format("20060102-150405")
-	var cdnPath = fmt.Sprintf("m%d/%s/raw/%s", m.Mid, cleanRepoName, outFile)
+	var cdnPath = fmt.Sprintf("m%d/%s/raw/%s", m.Mid, repoName, outFile)
 	log.Infof("cdn path: %s", cdnPath)
 	var pubAddress string
 	if pubAddress, err = UploadQiniu(outFullPath, cdnPath); err != nil {

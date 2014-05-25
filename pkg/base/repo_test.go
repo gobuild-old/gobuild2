@@ -13,4 +13,10 @@ func TestParseCvsURI(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Log(ci)
+
+	ci, err = ParseCvsURI("code.google.com/p/gcfg")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log(ci)
 }

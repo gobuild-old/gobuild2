@@ -22,12 +22,17 @@ type TaskForm struct {
 }
 
 func NewRepo(rf RepoInfoForm, ctx *middleware.Context) {
+	defer ctx.Redirect(302, "/")
 	var err error
-	rf.Name = base.SanitizedRepoPath(rf.Name)
-	if _, err = models.CreateRepository(rf.Name); err != nil {
-		log.Errorf("create repo error: %v", err)
+	cvsinfo, err := base.ParseCvsURI(rf.Name) // base.SanitizedRepoPath(rf.Name)
+	if err != nil {
+		log.Errorf("parse cvs url error: %v", err)
+		return
 	}
-	ctx.Redirect(302, "/")
+	if _, err = models.CreateRepository(cvsinfo.FullPath); err != nil {
+		log.Errorf("create repo error: %v", err)
+		return
+	}
 }
 
 func NewBuild(rf RepositoryForm, ctx *middleware.Context) {

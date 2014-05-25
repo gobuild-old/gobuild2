@@ -57,9 +57,13 @@ func Action(c *cli.Context) {
 	m.Any("/history", routers.History)
 	m.Any("/download", routers.Download)
 	m.Post("/new-repo", binding.Bind(routers.RepoInfoForm{}), routers.NewRepo)
-	m.Post("/api/build", binding.Bind(routers.RepositoryForm{}), routers.NewBuild)
-	m.Post("/api/force-rebuild", binding.Bind(routers.TaskForm{}), routers.ForceRebuild)
-	m.Get("/api/pkglist", routers.PkgList)
+	m.Any("/search", routers.Search)
+
+	m.Group("/api", func(r martini.Router) {
+		m.Get("/pkglist", routers.PkgList)
+		m.Post("/build", binding.Bind(routers.RepositoryForm{}), routers.NewBuild)
+		m.Post("/force-rebuild", binding.Bind(routers.TaskForm{}), routers.ForceRebuild)
+	})
 
 	// Not found handler.
 	m.NotFound(routers.NotFound)

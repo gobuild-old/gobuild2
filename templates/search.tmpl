@@ -2,17 +2,9 @@
 {{template "base/navbar" .}}
 <div class="container">
 <div>
-	<p><b>PV:</b>{{.PV}}</p>
+	<h2>Search</h2>
 </div>
-<div>
-<form role="form" method="post" action="/new-repo">
-	<label>Repo Name</label>
-	<input class="form-control" type="input" name="repo-name" placeholder="github.com/.../..." required />
-	<button class="btn btn-default">Add Repository</button>
-</form>
-</div>
-
-<h3>Repo List<span class="pull-right"><form action="/search"><input name="q" class="form-control" type="input" placeholder="search" autofocus /></form></span></h3>
+<h1>Not finished</h1>
 <div>
 	<ul class="list-group">
 		{{range .Repos}}
