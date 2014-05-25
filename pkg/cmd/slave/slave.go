@@ -132,10 +132,11 @@ func work(m *xrpc.Mission) (err error) {
 	buffer.Reset()
 
 	// write extra pkginfo
-	ioutil.WriteFile(filepath.Join(srcPath, "gobuild.pkginfo"), m.PkgInfo, 0644)
+	pkginfo := "pkginfo.json"
+	ioutil.WriteFile(filepath.Join(srcPath, pkginfo), m.PkgInfo, 0644)
 
 	err = sess.Command(PROGRAM, "pack",
-		"--nobuild", "-a", "gobuild.pkginfo", "-o", outFile, sh.Dir(srcPath)).Run()
+		"--nobuild", "-a", pkginfo, "-o", outFile, sh.Dir(srcPath)).Run()
 	notify(models.ST_PACKING, string(buffer.Bytes()))
 	if err != nil {
 		log.Error(err)
