@@ -143,12 +143,12 @@ func work(m *xrpc.Mission) (err error) {
 	}
 
 	// timestamp := time.Now().Format("20060102-150405")
-	var cdnPath = com.Expand("m{tid}/{reponame}/{branch}/{filename}", map[string]string{
+	var cdnPath = com.Expand("m{tid}/{reponame}/br-{branch}/{filename}", map[string]string{
 		"tid":      strconv.Itoa(int(m.Mid)),
 		"reponame": repoName,
 		"branch":   m.Branch,
 		"filename": outFile,
-	}) // fmt.Sprintf("m%d/%s/%s/%s", m.Mid, repoName, outFile)
+	})
 	notify(models.ST_PUBLISHING, cdnPath)
 	log.Infof("cdn path: %s", cdnPath)
 	var pubAddress string
