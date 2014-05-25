@@ -142,7 +142,6 @@ func work(m *xrpc.Mission) (err error) {
 		return
 	}
 
-	notify(models.ST_PUBLISHING, "")
 	// timestamp := time.Now().Format("20060102-150405")
 	var cdnPath = com.Expand("m{tid}/{reponame}/{branch}/{filename}", map[string]string{
 		"tid":      strconv.Itoa(int(m.Mid)),
@@ -150,6 +149,7 @@ func work(m *xrpc.Mission) (err error) {
 		"branch":   m.Branch,
 		"filename": outFile,
 	}) // fmt.Sprintf("m%d/%s/%s/%s", m.Mid, repoName, outFile)
+	notify(models.ST_PUBLISHING, cdnPath)
 	log.Infof("cdn path: %s", cdnPath)
 	var pubAddress string
 	if pubAddress, err = UploadQiniu(outFullPath, cdnPath); err != nil {
