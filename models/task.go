@@ -271,7 +271,8 @@ func GetAvaliableTask(os, arch string) (task *Task, err error) {
 	}
 	if !exists {
 		task.CgoEnable = true
-		if exists, err := orm.Asc("created").Get(task); err != nil || !exists {
+		task.Os, task.Arch = os, arch
+		if exists, err := orm.UseBool().Asc("created").Get(task); err != nil || !exists {
 			return nil, ErrTaskNotAvaliable
 		}
 	}

@@ -2,11 +2,17 @@ package xrpc
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/rpc"
+	"path/filepath"
+	"strconv"
 	"time"
 
+	"github.com/Unknwon/com"
 	"github.com/gobuild/gobuild2/models"
 	"github.com/gobuild/gobuild2/pkg/config"
+	"github.com/qiniu/api/conf"
+	"github.com/qiniu/api/rs"
 	"github.com/qiniu/log"
 )
 
@@ -39,6 +45,10 @@ type Mission struct {
 	Repo   string
 	Branch string
 	Sha    string
+
+	UpToken string // for qiniu upload
+	UpKey   string // for qiniu upload
+	Bulket  string
 
 	CgoEnable bool
 	Os, Arch  string
@@ -76,6 +86,8 @@ type PkgInfo struct {
 	Sha         string   `json:"sha"`
 }
 
+var defaultBulket string
+
 func (r *Rpc) GetMission(args *HostInfo, rep *Mission) error {
 	log.Infof("arch: %v", args.Arch)
 	log.Infof("host: %v", args.Host)
@@ -88,6 +100,21 @@ func (r *Rpc) GetMission(args *HostInfo, rep *Mission) error {
 		rep.Repo = task.Repo.Uri
 		rep.Branch = task.Branch
 		rep.Sha = task.Sha
+
+		// rep.UpKey
+		filename := fmt.Sprintf("%s-%s-%s.%s", filepath.Base(rep.Repo), rep.Os, rep.Arch, ".zip")
+		rep.UpKey = com.Expand("m{tid}/{reponame}/br-{branch}/{filename}", map[string]string{
+			"tid":      strconv.Itoa(int(rep.Mid)),
+			"reponame": rep.Repo,
+			"branch":   rep.Branch,
+			"filename": filename,
+		})
+		policy := rs.PutPolicy{
+			Scope: defaultBulket + ":" + rep.UpKey,
+		}
+		// policy.Expires = time.Now().Unix() + 3600
+		rep.UpToken = policy.Token(nil)
+
 		// todo
 		rep.PkgInfo, _ = json.Marshal(PkgInfo{
 			Sha:         task.Sha,
@@ -111,6 +138,10 @@ func (r *Rpc) UpdateMissionStatus(args *MissionStatus, reply *bool) error {
 }
 
 func HandleRpc() {
+	conf.ACCESS_KEY = config.Config.Cdn.AccessKey
+	conf.SECRET_KEY = config.Config.Cdn.SecretKey
+	defaultBulket = config.Config.Cdn.Bulket
+
 	gr := new(Rpc)
 	rpc.Register(gr)
 	rpc.HandleHTTP()

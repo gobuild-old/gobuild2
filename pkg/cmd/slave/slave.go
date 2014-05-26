@@ -8,11 +8,9 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"strconv"
 	"strings"
 	"time"
 
-	"github.com/Unknwon/com"
 	"github.com/codegangsta/cli"
 	"github.com/codeskyblue/go-sh"
 	"github.com/gobuild/gobuild2/models"
@@ -100,15 +98,11 @@ func work(m *xrpc.Mission) (err error) {
 			params = append(params, repoName+"@branch:"+m.Branch)
 		}
 		params = append(params, sh.Dir(gopath))
-		if err = sess.Command("gopm", params...).Run(); err != nil { //"get", "-v", "-g", repoName+"@commit:"+m.Sha, sh.Dir(gopath)).Run(); err != nil {
+		if err = sess.Command("gopm", params...).Run(); err != nil {
 			return
 		}
 		return nil
 	}
-	// getsrc = func() (err error) {
-	// 	os.RemoveAll(srcPath)
-	// 	return sess.Command("go", "get", "-d", "-v", repoName).Run()
-	// }
 
 	newNotify := func(status string, buf *bytes.Buffer) chan bool {
 		return GoInterval(time.Second*2, func() {
@@ -128,8 +122,9 @@ func work(m *xrpc.Mission) (err error) {
 	}
 	buffer.Reset()
 
-	extention := "zip"
-	var outFile = fmt.Sprintf("%s-%s-%s.%s", filepath.Base(repoName), m.Os, m.Arch, extention)
+	// extention := "zip"
+	// var outFile = m.UpKey // fmt.Sprintf("%s-%s-%s.%s", filepath.Base(repoName), m.Os, m.Arch, extention)
+	var outFile = filepath.Base(m.UpKey)
 	var outFullPath = filepath.Join(srcPath, outFile)
 
 	// notify(models.ST_BUILDING, "start building")
@@ -155,22 +150,18 @@ func work(m *xrpc.Mission) (err error) {
 		return
 	}
 
-	// timestamp := time.Now().Format("20060102-150405")
-	var cdnPath = com.Expand("m{tid}/{reponame}/br-{branch}/{filename}", map[string]string{
-		"tid":      strconv.Itoa(int(m.Mid)),
-		"reponame": repoName,
-		"branch":   m.Branch,
-		"filename": outFile,
-	})
+	var cdnPath = m.UpKey
 	notify(models.ST_PUBLISHING, cdnPath)
 	log.Infof("cdn path: %s", cdnPath)
-	var pubAddress string
-	if pubAddress, err = UploadQiniu(outFullPath, cdnPath); err != nil {
+	q := &Qiniu{m.UpToken, m.UpKey, m.Bulket} // uptoken, key}
+	var pubAddr string
+	if pubAddr, err = q.Upload(outFullPath); err != nil {
 		checkError(err)
 		return
 	}
-	log.Debugf("publish %s to %s", outFile, pubAddress)
-	notify(models.ST_DONE, pubAddress)
+
+	log.Debugf("publish %s to %s", outFile, pubAddr)
+	notify(models.ST_DONE, pubAddr)
 	return nil
 }
 
