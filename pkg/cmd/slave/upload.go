@@ -2,17 +2,10 @@ package slave
 
 import (
 	"github.com/gobuild/log"
-	"github.com/qiniu/api/conf"
 	"github.com/qiniu/api/io"
 )
 
 var defaultBulket = "xxxx"
-
-func initQiniu(access, secret string, bulket string) {
-	conf.ACCESS_KEY = access
-	conf.SECRET_KEY = secret
-	defaultBulket = bulket
-}
 
 type Storager interface {
 	Upload(localFile string) (pubAddr string, err error)

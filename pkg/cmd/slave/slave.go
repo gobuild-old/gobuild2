@@ -130,7 +130,14 @@ func work(m *xrpc.Mission) (err error) {
 
 	// notify(models.ST_BUILDING, "start building")
 	done = newNotify(models.ST_BUILDING, buffer)
-	gopm, _ := exec.LookPath("gopm")
+	gopm, err := exec.LookPath("gopm")
+	if err != nil {
+		return
+	}
+	gopm, err = filepath.Abs(gopm)
+	if err != nil {
+		return
+	}
 	err = sess.Command(gopm, "build", "-u", "-v", sh.Dir(srcPath)).Run()
 	done <- true
 	notify(models.ST_BUILDING, string(buffer.Bytes()))
@@ -178,12 +185,9 @@ func init() {
 var IsPrivateUpload bool //todo
 
 func prepare() (err error) {
-	qi := new(xrpc.QiniuInfo)
-	if err = xrpc.Call("GetQiniuInfo", HOSTINFO, qi); err != nil {
-		return
-	}
-	initQiniu(qi.AccessKey, qi.SecretKey, qi.Bulket)
-
+	// if err = xrpc.Call("GetQiniuInfo", HOSTINFO, qi); err != nil {
+	// 	return
+	// }
 	TMPDIR, err = filepath.Abs(TMPDIR)
 	if err != nil {
 		log.Errorf("tmpdir to abspath err: %v", err)
