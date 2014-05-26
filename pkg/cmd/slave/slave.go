@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -129,7 +130,8 @@ func work(m *xrpc.Mission) (err error) {
 
 	// notify(models.ST_BUILDING, "start building")
 	done = newNotify(models.ST_BUILDING, buffer)
-	err = sess.Command("gopm", "build", "-u", "-v", sh.Dir(srcPath)).Run()
+	gopm, _ := exec.LookPath("gopm")
+	err = sess.Command(gopm, "build", "-u", "-v", sh.Dir(srcPath)).Run()
 	done <- true
 	notify(models.ST_BUILDING, string(buffer.Bytes()))
 	if err != nil {
