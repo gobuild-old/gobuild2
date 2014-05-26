@@ -114,6 +114,7 @@ func (r *Rpc) GetMission(args *HostInfo, rep *Mission) error {
 		}
 		policy.Expires = uint32(time.Now().Unix() + 3600)
 		rep.UpToken = policy.Token(nil)
+		rep.Bulket = defaultBulket
 
 		// todo
 		rep.PkgInfo, _ = json.MarshalIndent(PkgInfo{
