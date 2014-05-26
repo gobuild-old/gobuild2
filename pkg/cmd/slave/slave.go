@@ -105,10 +105,10 @@ func work(m *xrpc.Mission) (err error) {
 		}
 		return nil
 	}
-	getsrc = func() (err error) {
-		os.RemoveAll(srcPath)
-		return sess.Command("go", "get", "-d", "-v", repoName).Run()
-	}
+	// getsrc = func() (err error) {
+	// 	os.RemoveAll(srcPath)
+	// 	return sess.Command("go", "get", "-d", "-v", repoName).Run()
+	// }
 
 	newNotify := func(status string, buf *bytes.Buffer) chan bool {
 		return GoInterval(time.Second*2, func() {

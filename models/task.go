@@ -137,6 +137,7 @@ func CreateNewBuilding(rid int64, branch string, os, arch string) (err error) {
 		CgoEnable: repo.IsCgo,
 	}
 	var cvsinfo *base.CVSInfo
+	log.Infof("add task for repo: %v", repo.Uri)
 	if cvsinfo, err = base.ParseCvsURI(repo.Uri); err != nil {
 		return
 	}
@@ -146,6 +147,7 @@ func CreateNewBuilding(rid int64, branch string, os, arch string) (err error) {
 			err = er
 			return
 		}
+		log.Infof("get information from github:%v", info)
 		task.Sha = *info.Commit.SHA
 		if info.Commit.Message != nil {
 			task.CommitMessage = *info.Commit.Message
