@@ -10,7 +10,8 @@ import (
 // keep task status always avaliable
 func drainTask() {
 	for {
-		log.Infof("drain task start")
+		log.Infof("drain task start after 25min")
+		time.Sleep(25 * time.Minute)
 		if repos, err := models.GetAllRepos(1000, 0); err == nil {
 			for _, r := range repos {
 				oas := map[string]string{
@@ -27,6 +28,5 @@ func drainTask() {
 				}
 			}
 		}
-		time.Sleep(1 * time.Minute)
 	}
 }

@@ -102,7 +102,7 @@ func (r *Rpc) GetMission(args *HostInfo, rep *Mission) error {
 		rep.Sha = task.Sha
 
 		// rep.UpKey
-		filename := fmt.Sprintf("%s-%s-%s.%s", filepath.Base(rep.Repo), rep.Os, rep.Arch, ".zip")
+		filename := fmt.Sprintf("%s-%s-%s.%s", filepath.Base(rep.Repo), rep.Os, rep.Arch, "zip")
 		rep.UpKey = com.Expand("m{tid}/{reponame}/br-{branch}/{filename}", map[string]string{
 			"tid":      strconv.Itoa(int(rep.Mid)),
 			"reponame": rep.Repo,
