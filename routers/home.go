@@ -1,7 +1,6 @@
 package routers
 
 import (
-	"strconv"
 	"strings"
 
 	"github.com/gobuild/gobuild2/models"
@@ -60,28 +59,6 @@ func NewRepo(rf RepoInfoForm, ctx *middleware.Context) {
 		log.Errorf("create repo error: %v", err)
 		return
 	}
-}
-
-func NewBuild(rf RepositoryForm, ctx *middleware.Context) {
-	oas := map[string]string{
-		"windows": "386",
-		"linux":   "386",
-		"darwin":  "amd64",
-	}
-	for os, arch := range oas {
-		err := models.CreateNewBuilding(rf.Rid, "master", os, arch)
-		if err != nil {
-			log.Errorf("create module error: %v", err)
-		}
-	}
-	ctx.Redirect(302, "/repo?id="+strconv.Itoa(int(rf.Rid)))
-}
-
-func ForceRebuild(tf TaskForm, ctx *middleware.Context) {
-	if err := models.ResetTask(tf.Tid); err != nil {
-		log.Errorf("reset task failed: %v", err)
-	}
-	ctx.Redirect(302, "/history?id="+strconv.Itoa(int(tf.Tid)))
 }
 
 func Home(ctx *middleware.Context) {

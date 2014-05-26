@@ -112,15 +112,15 @@ func (r *Rpc) GetMission(args *HostInfo, rep *Mission) error {
 		policy := rs.PutPolicy{
 			Scope: defaultBulket + ":" + rep.UpKey,
 		}
-		// policy.Expires = time.Now().Unix() + 3600
+		policy.Expires = uint32(time.Now().Unix() + 3600)
 		rep.UpToken = policy.Token(nil)
 
 		// todo
-		rep.PkgInfo, _ = json.Marshal(PkgInfo{
+		rep.PkgInfo, _ = json.MarshalIndent(PkgInfo{
 			Sha:         task.Sha,
 			Author:      []string{"unknown"},
 			Description: "unknown",
-		})
+		}, "", "    ")
 		return nil
 	case models.ErrTaskNotAvaliable:
 		rep.Idle = time.Second * 3

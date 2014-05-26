@@ -24,6 +24,37 @@ func Download(ctx *middleware.Context) {
 	ctx.Redirect(302, task.ArchieveAddr)
 }
 
+func NewBuild(rf RepositoryForm, ctx *middleware.Context) {
+	defer ctx.Redirect(302, "/repo?id="+strconv.Itoa(int(rf.Rid)))
+	repo, err := models.GetRepositoryById(rf.Rid)
+	if err != nil {
+		log.Errorf("get repo by id error: %v", err)
+		return
+	}
+	oas := map[string]string{
+		"windows": "386",
+		"linux":   "386",
+		"darwin":  "amd64",
+	}
+	if repo.IsCgo {
+		delete(oas, "windows")
+		oas["linux"] = "amd64"
+	}
+	for os, arch := range oas {
+		err := models.CreateNewBuilding(rf.Rid, "master", os, arch)
+		if err != nil {
+			log.Errorf("create module error: %v", err)
+		}
+	}
+}
+
+func ForceRebuild(tf TaskForm, ctx *middleware.Context) {
+	if err := models.ResetTask(tf.Tid); err != nil {
+		log.Errorf("reset task failed: %v", err)
+	}
+	ctx.Redirect(302, "/history?id="+strconv.Itoa(int(tf.Tid)))
+}
+
 func Repo(ctx *middleware.Context, params martini.Params, req *http.Request) {
 	id, _ := strconv.Atoi(req.FormValue("id"))
 	rid := int64(id)
