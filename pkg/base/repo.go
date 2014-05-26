@@ -37,7 +37,7 @@ var (
 const (
 	PVD_GITHUB      = "github.com"
 	PVD_GOOGLE      = "code.google.com"
-	defaultProvider = "github.com"
+	defaultProvider = PVD_GITHUB
 )
 
 var ProviderCtrlMap = map[string]string{
@@ -48,8 +48,9 @@ var ProviderCtrlMap = map[string]string{
 func ParseCvsURI(uri string) (*CVSInfo, error) {
 	uri = sanitizedRepoPath(uri)
 	var provider string
-	if key, has := ProviderCtrlMap[strings.Split(uri, "/")[0]]; has {
-		provider = key
+	guessProvider := strings.Split(uri, "/")[0]
+	if _, has := ProviderCtrlMap[guessProvider]; has {
+		provider = guessProvider
 	}
 	if provider == "" {
 		provider = defaultProvider
