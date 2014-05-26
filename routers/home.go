@@ -2,9 +2,11 @@ package routers
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/gobuild/gobuild2/models"
 	"github.com/gobuild/gobuild2/pkg/base"
+	"github.com/gobuild/gobuild2/pkg/gowalker"
 	"github.com/gobuild/middleware"
 	"github.com/qiniu/log"
 )
@@ -29,7 +31,32 @@ func NewRepo(rf RepoInfoForm, ctx *middleware.Context) {
 		log.Errorf("parse cvs url error: %v", err)
 		return
 	}
-	if _, err = models.CreateRepository(cvsinfo.FullPath); err != nil {
+
+	repoUri := cvsinfo.FullPath
+	r := new(models.Repository)
+	r.Uri = repoUri
+
+	pkginfo, err := gowalker.GetCmdPkgInfo(repoUri)
+	if err != nil {
+		log.Errorf("gowalker not passed check: %v", err)
+		return
+	}
+	r.IsCgo = pkginfo.IsCgo
+	// description
+	r.Brief = pkginfo.Description
+	base.ParseCvsURI(repoUri)
+	if strings.HasPrefix(repoUri, "github.com") {
+		// comunicate with github
+		fields := strings.Split(repoUri, "/")
+		owner, repoName := fields[1], fields[2]
+		repo, _, err := models.GHClient.Repositories.Get(owner, repoName)
+		if err != nil {
+			log.Errorf("get information from github error: %v", err)
+		} else {
+			r.Brief = *repo.Description
+		}
+	}
+	if _, err = models.CreateRepository(r); err != nil {
 		log.Errorf("create repo error: %v", err)
 		return
 	}

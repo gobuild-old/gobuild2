@@ -17,13 +17,35 @@ func initQiniu(access, secret string, bulket string) {
 	defaultBulket = bulket
 }
 
+type Storager interface {
+	Upload(localFile string) (pubAddr string, err error)
+}
+
+type Qiniu struct {
+	uptoken string
+	key     string
+}
+
+func (q *Qiniu) Upload(local string) (pubAddr string, err error) {
+	var ret io.PutRet
+	var extra = &io.PutExtra{}
+	if err = io.PutFile(nil, &ret, q.uptoken, q.key, local, extra); err != nil {
+		return
+	}
+	log.Infof("upload success:%v", ret)
+	pubAddr = "http://" + defaultBulket + ".qiniudn.com/" + q.key
+	return
+}
+
 // mimetype ref: http://webdesign.about.com/od/multimedia/a/mime-types-by-content-type.htm
 func UploadQiniu(localFile string, destName string) (addr string, err error) {
-	destName = strings.TrimLeft(destName, "/")
+	key := strings.TrimLeft(destName, "/")
 	policy := rs.PutPolicy{Scope: defaultBulket + ":" + destName}
 	uptoken := policy.Token(nil)
 
-	var ret io.PutRet
+	q := &Qiniu{uptoken, key}
+	return q.Upload(localFile)
+	// var ret io.PutRet
 	// mimeType := ""
 	// if strings.HasSuffix(destName, "tar.gz") {
 	// 	mimeType = "application/x-tgz"
@@ -33,13 +55,13 @@ func UploadQiniu(localFile string, destName string) (addr string, err error) {
 	// var extra = &io.PutExtra{
 	// 	MimeType: mimeType,
 	// }
-	var extra = &io.PutExtra{}
-	if err = io.PutFile(nil, &ret, uptoken, destName, localFile, extra); err != nil {
-		return
-	}
-	log.Infof("upload success:%v", ret)
-	addr = "http://" + defaultBulket + ".qiniudn.com/" + destName
-	return
+	// var extra = &io.PutExtra{}
+	// if err = io.PutFile(nil, &ret, uptoken, destName, localFile, extra); err != nil {
+	// 	return
+	// }
+	// log.Infof("upload success:%v", ret)
+	// addr = "http://" + defaultBulket + ".qiniudn.com/" + destName
+	// return
 }
 
 /*

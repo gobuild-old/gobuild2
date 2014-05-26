@@ -39,6 +39,21 @@ type NTMsg struct {
 	Extra  string
 }
 
+func GoInterval(dur time.Duration, f func()) chan bool {
+	done := make(chan bool)
+	go func() {
+		for {
+			select {
+			case <-done:
+				return
+			case <-time.After(dur):
+				f()
+			}
+		}
+	}()
+	return done
+}
+
 func work(m *xrpc.Mission) (err error) {
 	notify := func(status string, output string, extra ...string) {
 		mstatus := &xrpc.MissionStatus{Mid: m.Mid, Status: status,
@@ -77,25 +92,22 @@ func work(m *xrpc.Mission) (err error) {
 	var srcPath = filepath.Join(gopath, "src", repoName)
 
 	getsrc := func() (err error) {
-		if err = sess.Command("gopm", "get", "-v", "-g", repoName+"@commit:"+m.Sha, sh.Dir(gopath)).Run(); err != nil {
+		var params []interface{}
+		params = append(params, "get", "-v", "-g")
+		if m.Sha != "" {
+			params = append(params, repoName+"@commit:"+m.Sha)
+		} else {
+			params = append(params, repoName+"@branch:"+m.Branch)
+		}
+		params = append(params, sh.Dir(gopath))
+		if err = sess.Command("gopm", params...).Run(); err != nil { //"get", "-v", "-g", repoName+"@commit:"+m.Sha, sh.Dir(gopath)).Run(); err != nil {
 			return
 		}
 		return nil
 	}
-
-	GoInterval := func(dur time.Duration, f func()) chan bool {
-		done := make(chan bool)
-		go func() {
-			for {
-				select {
-				case <-done:
-					return
-				case <-time.After(dur):
-					f()
-				}
-			}
-		}()
-		return done
+	getsrc = func() (err error) {
+		os.RemoveAll(srcPath)
+		return sess.Command("go", "get", "-d", "-v", repoName).Run()
 	}
 
 	newNotify := func(status string, buf *bytes.Buffer) chan bool {
@@ -169,6 +181,8 @@ func init() {
 		log.Fatalf("hostname retrive err: %v", err)
 	}
 }
+
+var IsPrivateUpload bool //todo
 
 func prepare() (err error) {
 	qi := new(xrpc.QiniuInfo)

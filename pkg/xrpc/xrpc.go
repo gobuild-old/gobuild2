@@ -70,6 +70,7 @@ type PkgInfo struct {
 	Author      []string `json:"author"`
 	From        string   `json:"from"`
 	Description string   `json:"description"`
+	Created     string   `json:"created"`
 	Os          string   `json:"os"`
 	Arch        string   `json:"arch"`
 	Sha         string   `json:"sha"`

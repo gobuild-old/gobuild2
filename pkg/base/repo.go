@@ -13,6 +13,9 @@ func sanitizedRepoPath(repo string) string {
 	if strings.HasPrefix(repo, "https://") {
 		repo = repo[len("https://"):]
 	}
+	if strings.HasPrefix(repo, "http://") {
+		repo = repo[len("http://"):]
+	}
 	return repo
 }
 
@@ -32,41 +35,37 @@ var (
 )
 
 const (
-	ProviderGithub = "github.com"
-	ProviderGoogle = "code.google.com"
+	PVD_GITHUB      = "github.com"
+	PVD_GOOGLE      = "code.google.com"
+	defaultProvider = "github.com"
 )
 
-var verCtrlMap = map[string]string{
-	ProviderGithub: "git",
-	ProviderGoogle: "hg",
+var ProviderCtrlMap = map[string]string{
+	PVD_GITHUB: "git",
+	PVD_GOOGLE: "hg",
 }
 
 func ParseCvsURI(uri string) (*CVSInfo, error) {
 	uri = sanitizedRepoPath(uri)
 	var provider string
-	switch {
-	case strings.HasPrefix(uri, ProviderGoogle):
-		provider = ProviderGoogle
-	case strings.HasPrefix(uri, ProviderGithub):
-		provider = ProviderGithub
-	default:
-		provider = ProviderGithub
-		uri = ProviderGithub + "/" + uri
+	if key, has := ProviderCtrlMap[strings.Split(uri, "/")[0]]; has {
+		provider = key
 	}
+	if provider == "" {
+		provider = defaultProvider
+		uri = provider + "/" + uri
+	}
+
 	fields := strings.Split(uri, "/")
 	if len(fields) < 3 {
 		return nil, ErrCvsURIInvalid
 	}
 	return &CVSInfo{
 		Provider:       provider,
-		VersionControl: verCtrlMap[provider],
+		VersionControl: ProviderCtrlMap[provider],
 		Owner:          fields[1],
 		RepoName:       fields[2],
 		RepoSubPath:    strings.Join(fields[2:], "/"),
 		FullPath:       uri,
 	}, nil
-	// cvsinfo := new(CVSInfo)
-	// if strings.HasPrefix(uri, ProviderGithub) {
-	// }
-	// return nil, ErrCvsNotRecognized
 }
