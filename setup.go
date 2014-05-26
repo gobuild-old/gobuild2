@@ -12,12 +12,11 @@ import (
 var CWD, _ = os.Getwd()
 
 func setup() {
-	var gocmd string
 	var err error
 	var bindir = filepath.Join(CWD, "bin")
 	var tmpdir = filepath.Join(CWD, "tmp-gopath")
 	os.Setenv("PATH", bindir+":"+os.Getenv("PATH"))
-	if gocmd, err = exec.LookPath("go"); err != nil {
+	if _, err := exec.LookPath("go"); err != nil {
 		log.Fatal("require go tool installed")
 	}
 	sess := sh.NewSession()
