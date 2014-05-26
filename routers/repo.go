@@ -24,9 +24,8 @@ func Download(ctx *middleware.Context) {
 	ctx.Redirect(302, task.ArchieveAddr)
 }
 
-func NewBuild(rf RepositoryForm, ctx *middleware.Context) {
-	defer ctx.Redirect(302, "/repo?id="+strconv.Itoa(int(rf.Rid)))
-	repo, err := models.GetRepositoryById(rf.Rid)
+func TriggerBuildRepositoryById(rid int64) (err error) {
+	repo, err := models.GetRepositoryById(rid)
 	if err != nil {
 		log.Errorf("get repo by id error: %v", err)
 		return
@@ -41,11 +40,17 @@ func NewBuild(rf RepositoryForm, ctx *middleware.Context) {
 		oas["linux"] = "amd64"
 	}
 	for os, arch := range oas {
-		err := models.CreateNewBuilding(rf.Rid, "master", os, arch)
+		err := models.CreateNewBuilding(rid, "master", os, arch)
 		if err != nil {
 			log.Errorf("create module error: %v", err)
 		}
 	}
+	return nil
+}
+
+func NewBuild(rf RepositoryForm, ctx *middleware.Context) {
+	defer ctx.Redirect(302, "/repo?id="+strconv.Itoa(int(rf.Rid)))
+	TriggerBuildRepositoryById(rf.Rid)
 }
 
 func ForceRebuild(tf TaskForm, ctx *middleware.Context) {

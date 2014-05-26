@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/gobuild/gobuild2/models"
+	"github.com/gobuild/gobuild2/routers"
 	"github.com/qiniu/log"
 )
 
@@ -14,18 +15,7 @@ func drainTask() {
 		time.Sleep(25 * time.Minute)
 		if repos, err := models.GetAllRepos(1000, 0); err == nil {
 			for _, r := range repos {
-				oas := map[string]string{
-					"windows": "386",
-					"linux":   "386",
-					"darwin":  "amd64",
-				}
-				for os, arch := range oas {
-					// err :=
-					models.CreateNewBuilding(r.Id, "master", os, arch)
-					// if err != nil {
-					// log.Errorf("drain - create module error: %v", err)
-					// }
-				}
+				routers.TriggerBuildRepositoryById(r.Id)
 			}
 		}
 	}

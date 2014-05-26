@@ -56,15 +56,15 @@ type Mission struct {
 	PkgInfo []byte // store it to gobuild.pkginfo
 }
 
-func (r *Rpc) GetQiniuInfo(args *HostInfo, rep *QiniuInfo) error {
-	log.Infof("arch: %v", args.Arch)
-	log.Infof("host: %v", args.Host)
-	cdn := config.Config.Cdn
-	rep.AccessKey = cdn.AccessKey
-	rep.SecretKey = cdn.SecretKey
-	rep.Bulket = cdn.Bulket
-	return nil
-}
+// func (r *Rpc) GetQiniuInfo(args *HostInfo, rep *QiniuInfo) error {
+// 	log.Infof("arch: %v", args.Arch)
+// 	log.Infof("host: %v", args.Host)
+// 	cdn := config.Config.Cdn
+// 	rep.AccessKey = cdn.AccessKey
+// 	rep.SecretKey = cdn.SecretKey
+// 	rep.Bulket = cdn.Bulket
+// 	return nil
+// }
 
 func Call(method string, args interface{}, reply interface{}) error {
 	client, err := rpc.DialHTTP("tcp", DefaultWebAddress)
