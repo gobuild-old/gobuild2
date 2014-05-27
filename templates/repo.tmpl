@@ -1,5 +1,10 @@
 {{template "base/header" .}}
 {{template "base/navbar" .}}
+<script>
+  $(document).on("click", "input.click-select", function(e) {
+        $(e.target).select();
+    });
+</script>
 <div class="container">
 <div>
 	<a href="https://{{.Repo.Uri}}">[view-source]</a> <b>{{.Repo.Uri}}</b> - last commit: af87asdfsdf
@@ -9,11 +14,9 @@
 <div class="row">
 	<div class="col-md-8">
 		<div class="well">
+			<a href="https://github.com/gobuild/got">got:</a> tool for gobuild<br>
+			<input class="form-control click-select" type="text" value="got install {{.Repo.Uri}}"><br>
 			cgo: {{.Repo.IsCgo}}<br>
-			<del>sha: jghasdfasdfkasdfasdfasd<br>
-			last commit: 2day ago<br>
-			desc: fix bug<br>
-			last build 2min ago<br></del>
 			total download: {{.DownCnt}}<br>
 			<b>last build</b><br>
 			{{range .Last}}
@@ -39,7 +42,7 @@
 	<ul class="list-group">
 		{{range .Tasks}}
 		<li class="list-group-item">
-			{{.Os}}-{{.Arch}} {{.Updated|timesince}} ago - status:{{.Status}}
+			[{{.Id}}] {{.Os}}-{{.Arch}} {{.Updated|timesince}} ago - status:{{.Status}}
 			<a class="" href="/history?id={{.Id}}">details</a>
 			<form class="pull-right" method="post" action="/api/force-rebuild">
 				<input type="hidden" name="tid" value="{{.Id}}">

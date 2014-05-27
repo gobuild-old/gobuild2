@@ -288,6 +288,6 @@ func GetAvaliableTask(os, arch string) (task *Task, err error) {
 
 func GetAllBuildHistoryByTid(tid int64) ([]BuildHistory, error) {
 	var bh []BuildHistory
-	err := orm.Asc("id").Find(&bh, &BuildHistory{Tid: tid})
+	err := orm.Desc("id").Find(&bh, &BuildHistory{Tid: tid}) // desc doesn't work
 	return bh, err
 }
