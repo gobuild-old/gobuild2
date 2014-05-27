@@ -6,15 +6,17 @@ import (
 	"path/filepath"
 
 	"github.com/codeskyblue/go-sh"
+	"github.com/gobuild/log"
 )
 
 func setUp() error {
+	log.Error("require go tool installed")
 	var err error
 	var binDir = filepath.Join(SELFDIR, "bin")
 	var tmpDir = filepath.Join(SELFDIR, "tmp/tmp-gopath")
 	os.Setenv("PATH", binDir+string(os.PathListSeparator)+os.Getenv("PATH"))
 	if _, err := exec.LookPath("go"); err != nil {
-		// log.Fatal("require go tool installed")
+		log.Error("require go tool installed")
 		return err
 	}
 	sess := sh.NewSession()
@@ -24,7 +26,7 @@ func setUp() error {
 		defer os.RemoveAll(tmpDir)
 		err = sess.Command("go", "get", "-u", "-v", "github.com/gpmgo/gopm").Run()
 		if err != nil {
-			// log.Fatalf("install gopm error: %v", err)
+			log.Errorf("install gopm error: %v", err)
 			return err
 		}
 	}

@@ -5,7 +5,7 @@ import (
 
 	"github.com/gobuild/gobuild2/models"
 	"github.com/gobuild/gobuild2/routers"
-	"github.com/qiniu/log"
+	"github.com/gobuild/log"
 )
 
 // keep task status always avaliable

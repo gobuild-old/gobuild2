@@ -15,11 +15,6 @@ import (
 	"github.com/gobuild/gobuild2/pkg/config"
 )
 
-func init() {
-	log.SetFlags(log.Linfo)
-	// log.SetOutputLevel(log.Ldebug)
-}
-
 func findFiles(path string, depth int, skips []*regexp.Regexp) ([]string, error) {
 	baseNumSeps := strings.Count(path, string(os.PathSeparator))
 	var files []string
