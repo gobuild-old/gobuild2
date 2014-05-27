@@ -20,7 +20,6 @@ import (
 )
 
 func newMartini() *martini.ClassicMartini {
-
 	r := martini.NewRouter()
 	m := martini.New()
 	m.Use(Logger())

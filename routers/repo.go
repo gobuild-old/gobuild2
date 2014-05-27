@@ -57,7 +57,7 @@ func ForceRebuild(tf TaskForm, ctx *middleware.Context) {
 	if err := models.ResetTask(tf.Tid); err != nil {
 		log.Errorf("reset task failed: %v", err)
 	}
-	ctx.Redirect(302, "/history?id="+strconv.Itoa(int(tf.Tid)))
+	ctx.Redirect(302, "/history?id="+strconv.Itoa(int(tf.Tid))+"&auto_refresh=true")
 }
 
 func Repo(ctx *middleware.Context, params martini.Params, req *http.Request) {

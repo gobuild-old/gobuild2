@@ -1,7 +1,19 @@
 {{template "base/header" .}}
 {{template "base/navbar" .}}
+{{if .AutoRefresh}}
+<script>
+	$(function(){
+		var status = "{{.Task.Status}}";
+		if (status != "done" && status != "error"){
+			setTimeout(function(){
+				location.reload(true);
+			}, 2000);
+		}	
+	})
+</script>
+{{end}}
 <div class="container">
-	<h2>Build History</h2>
+	<h2>Build History {{.AutoRefresh}}</h2>
 	<div>
 		<h4><a href="/repo?id={{.Task.Rid}}">{{.Task.Repo.Uri}}</a>
 			<a class="pull-right" href="{{.Task.ArchieveAddr}}">download <span class="glyphicon glyphicon-arrow-down"></span></a>
@@ -25,10 +37,16 @@
 		<div class="panel-heading">status: {{.Status}}<span class="pull-right">{{.Updated}}</span></div>
 		{{if .Output}}
 		<div class="panel-body">
-<pre>{{.Output | ansi2html}}</pre>
+			<pre>{{.Output | ansi2html}}</pre>
 		</div>
-{{end}}
+		{{end}}
 	</div>
-{{end}}
+	{{end}}
 </div>
+<script>
+	// $(function(){
+	// 	console.log(document.body.scrollHeight);
+	// 	window.scrollTo(0, document.body.scrollHeight);
+	// });
+</script>
 {{template "base/footer" .}}

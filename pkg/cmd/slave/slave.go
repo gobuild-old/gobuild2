@@ -92,7 +92,7 @@ func work(m *xrpc.Mission) (err error) {
 
 	getsrc := func() (err error) {
 		var params []interface{}
-		params = append(params, "get", "-v", "-g")
+		params = append(params, "get", "-d", "-v", "-g")
 		if m.Sha != "" {
 			params = append(params, repoName+"@commit:"+m.Sha)
 		} else {
