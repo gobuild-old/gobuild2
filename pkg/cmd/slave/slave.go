@@ -6,7 +6,6 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -101,7 +100,7 @@ func work(m *xrpc.Mission) (err error) {
 			params = append(params, repoName+"@branch:"+m.Branch)
 		}
 		params = append(params, sh.Dir(gopath))
-		if err = sess.Command("gopm", params...).Run(); err != nil {
+		if err = sess.Command(GOPM, params...).Run(); err != nil {
 			return
 		}
 		return nil
@@ -132,15 +131,15 @@ func work(m *xrpc.Mission) (err error) {
 
 	// notify(models.ST_BUILDING, "start building")
 	done = newNotify(models.ST_BUILDING, buffer)
-	gopm, err := exec.LookPath("gopm")
-	if err != nil {
-		return
-	}
-	gopm, err = filepath.Abs(gopm)
-	if err != nil {
-		return
-	}
-	err = sess.Command(gopm, "build", "-u", "-v", sh.Dir(srcPath)).Run()
+	// gopm, err := exec.LookPath("gopm")
+	// if err != nil {
+	// 	return
+	// }
+	// gopm, err = filepath.Abs(gopm)
+	// if err != nil {
+	// 	return
+	// }
+	err = sess.Command(GOPM, "build", "-u", "-v", sh.Dir(srcPath)).Run()
 	done <- true
 	notify(models.ST_BUILDING, string(buffer.Bytes()))
 	if err != nil {
