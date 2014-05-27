@@ -22,6 +22,8 @@ import (
 var (
 	TMPDIR     = "./tmp"
 	PROGRAM, _ = filepath.Abs(os.Args[0])
+	SELFDIR    = filepath.Dir(PROGRAM)
+	GOPM       = filepath.Join(SELFDIR, "bin/gopm")
 	HOSTNAME   = "localhost"
 	HOSTINFO   = &xrpc.HostInfo{Os: runtime.GOOS, Arch: runtime.GOARCH, Host: HOSTNAME}
 )
@@ -92,7 +94,7 @@ func work(m *xrpc.Mission) (err error) {
 
 	getsrc := func() (err error) {
 		var params []interface{}
-		params = append(params, "get", "-d", "-v", "-g")
+		params = append(params, "get", "-v", "-g") // todo: add -d when gopm released
 		if m.Sha != "" {
 			params = append(params, repoName+"@commit:"+m.Sha)
 		} else {
@@ -195,6 +197,9 @@ func prepare() (err error) {
 	}
 	if !sh.Test("dir", TMPDIR) {
 		os.MkdirAll(TMPDIR, 0755)
+	}
+	if err = setUp(); err != nil {
+		log.Fatalf("setUp environment error:%v", err)
 	}
 	startWork()
 	return nil

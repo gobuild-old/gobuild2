@@ -29,5 +29,4 @@ func setup() {
 			log.Fatalf("install gopm error: %v", err)
 		}
 	}
-	//fmt.Println(gocmd)
 }
