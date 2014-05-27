@@ -179,7 +179,7 @@ func CreateTask(task *Task) (*Task, error) {
 
 func GetTasksByRid(rid int64) ([]Task, error) {
 	var ts []Task
-	err := orm.Find(&ts, &Task{Rid: rid})
+	err := orm.Desc("id").Find(&ts, &Task{Rid: rid})
 	return ts, err
 }
 
@@ -288,6 +288,6 @@ func GetAvaliableTask(os, arch string) (task *Task, err error) {
 
 func GetAllBuildHistoryByTid(tid int64) ([]BuildHistory, error) {
 	var bh []BuildHistory
-	err := orm.Desc("id").Find(&bh, &BuildHistory{Tid: tid}) // desc doesn't work
+	err := orm.Asc("id").Find(&bh, &BuildHistory{Tid: tid})
 	return bh, err
 }
