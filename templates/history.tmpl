@@ -24,7 +24,7 @@
 			commits: {{.Task.Sha}}<br/>
 			start-time: {{.Task.Created }}<br/>
 			last-update: {{.Task.Updated | timesince}} ago<br/>
-			status: {{.Task.Status}}<br/>
+			status:<span {{if eq .Task.Status "error"}}style="color:red"{{end}}>{{.Task.Status}}</span><br>
 			<form method="post" action="/api/force-rebuild">
 				<input type="hidden" name="tid" value="{{.Task.Id}}">
 				<button class="btn btn-error btn-xs">force-rebuid</button>

@@ -42,7 +42,8 @@
 	<ul class="list-group">
 		{{range .Tasks}}
 		<li class="list-group-item">
-			[{{.Id}}] {{.Os}}-{{.Arch}} {{.Updated|timesince}} ago - status:{{.Status}}
+			[{{.Id}}] {{.Os}}-{{.Arch}} {{.Updated|timesince}} ago - 
+			status:<span {{if eq .Status "error"}}style="color:red"{{end}}>{{.Status}}</span>
 			<a class="" href="/history?id={{.Id}}">details</a>
 			<form class="pull-right" method="post" action="/api/force-rebuild">
 				<input type="hidden" name="tid" value="{{.Id}}">
