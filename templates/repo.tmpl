@@ -39,20 +39,22 @@
 </div>
 <div>
 	<h4>Build History</h4>
-	<ul class="list-group">
+	<!-- <ul class="list-group"> -->
+	<table class="table table-hover">
 		{{range .Tasks}}
-		<li class="list-group-item">
-			[{{.Id}}] {{.Os}}-{{.Arch}} {{.Updated|timesince}} ago - 
-			status:<span {{if eq .Status "error"}}style="color:red"{{end}}>{{.Status}}</span>
-			<a class="" href="/history?id={{.Id}}">details</a>
+		<tr class="{{if eq .Status "error"}}danger{{else}}success{{end}}">
+			<td>[{{.Id}}] {{.Os}}-{{.Arch}}</td>
+			<td>{{.Updated|timesince}} ago <a class="" href="/history?id={{.Id}}">details</a>
 			<form class="pull-right" method="post" action="/api/force-rebuild">
 				<input type="hidden" name="tid" value="{{.Id}}">
 				<button class="btn btn-default btn-xs">rebuid</button>
 			</form>
 			<a class="pull-right" href="{{.ArchieveAddr}}">download
 			<span class="glyphicon glyphicon-floppy-save"></span></a>
-		</li>
+		</td>
+		</tr>
 		{{end}}
-	</ul>
+	</table>
+	<!-- </ul> -->
 </div>
 {{template "base/footer" .}}
