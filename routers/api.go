@@ -4,8 +4,8 @@ import (
 	"time"
 
 	"github.com/gobuild/gobuild2/models"
+	"github.com/gobuild/log"
 	"github.com/gobuild/middleware"
-	"github.com/qiniu/log"
 )
 
 type PackageItem struct {

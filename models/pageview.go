@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/qiniu/log"
+	"github.com/gobuild/log"
 )
 
 type PageView struct {

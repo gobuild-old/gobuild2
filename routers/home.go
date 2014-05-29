@@ -6,8 +6,8 @@ import (
 	"github.com/gobuild/gobuild2/models"
 	"github.com/gobuild/gobuild2/pkg/base"
 	"github.com/gobuild/gobuild2/pkg/gowalker"
+	"github.com/gobuild/log"
 	"github.com/gobuild/middleware"
-	"github.com/qiniu/log"
 )
 
 type RepoInfoForm struct {

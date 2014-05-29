@@ -6,8 +6,8 @@ import (
 
 	"code.google.com/p/goauth2/oauth"
 	"github.com/gobuild/gobuild2/pkg/base"
+	"github.com/gobuild/log"
 	"github.com/google/go-github/github"
-	"github.com/qiniu/log"
 )
 
 const (

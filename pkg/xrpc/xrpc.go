@@ -11,9 +11,9 @@ import (
 	"github.com/Unknwon/com"
 	"github.com/gobuild/gobuild2/models"
 	"github.com/gobuild/gobuild2/pkg/config"
+	"github.com/gobuild/log"
 	"github.com/qiniu/api/conf"
 	"github.com/qiniu/api/rs"
-	"github.com/qiniu/log"
 )
 
 var DefaultWebAddress = "localhost:8010"
