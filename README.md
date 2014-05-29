@@ -3,12 +3,20 @@
 
 new implementation of gobuild
 
+## Badge
+TODO
+
+## Hooks
+TODO
+
+## Hook client
+TODO
 
 ## NOTICES
 developing now...
 
 ## LICENSE
-gobuild2 is under MIT [license](/LICENSE)
+gobuild2 is under [MIT License](/LICENSE)
 
 ## Overview
 * See [Trello Board](https://trello.com/b/Ml7fV574/gobuild2) to follow the develop team.

@@ -1,0 +1,21 @@
+{
+    "paths": [
+        "."
+    ],
+    "depth": 2,
+    "exclude": [
+        "~$",
+        "\\.swx$",
+        "\\.exe$"
+    ],
+    "include": [
+        "\\.go$"
+    ],
+    "command": [
+        "bash", "-c",
+        "go run main.go"
+    ],
+    "env": {
+        "POWERD_BY": "github.com/shxsun/fswatch"
+    }
+}
