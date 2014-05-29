@@ -1,0 +1,6 @@
+#!/bin/bash -
+#
+# authchecker $secret
+#
+
+echo "secret $1"

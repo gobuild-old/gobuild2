@@ -13,7 +13,7 @@
     ],
     "command": [
         "bash", "-c",
-        "go run main.go"
+        "go build -o hook && ./hook"
     ],
     "env": {
         "POWERD_BY": "github.com/shxsun/fswatch"

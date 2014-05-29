@@ -1,0 +1,8 @@
+#!/bin/bash -
+#
+#
+# receiver $repo $zipball_url
+#
+
+echo "repo: $1"
+echo "wget $2"
