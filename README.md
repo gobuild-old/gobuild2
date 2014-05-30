@@ -7,7 +7,7 @@ new implementation of gobuild
 TODO
 
 ## Hooks
-<scripts/hookme/README.md>
+[click to enter readme](scripts/hookme/README.md)
 
 ## Hook client
 TODO
