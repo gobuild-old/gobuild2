@@ -1,5 +1,5 @@
 ## hookme
-hookme is a program for easily receive github, gitlab or gogit webhooks.
+hookme is a program for easily manage hooks from github, gitlab or gogit.
 
 ## how to use
 

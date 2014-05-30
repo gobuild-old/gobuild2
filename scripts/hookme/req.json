@@ -1,6 +1,19 @@
 {
-	"name": "gobuild2",
-	"secret": "123456",
-	"repo": "github.com/gobuild/gobuild2",
-	"zipball_url": "http://xxx.zip"
+  "secret": "123456",
+  "name": "gobuild2",
+  "repo": "github.com/gobuild/gobuild2",
+  "zipball_url": "http://xxx.zip",
+  "repository": {
+    "id": 2,
+    "name": "gogs",
+    "url": "http://localhost:3000/unknown/gogs",
+    "description": "Gogs(Go Git Service) is a Self Hosted Git Service in the Go Programming Language.",
+    "website": "http://gogs.io",
+    "watchers": 0,
+    "author": {
+      "name": "unknown",
+      "email": "joe2010xtmf@163.com"
+    },
+    "private": false
+  }
 }

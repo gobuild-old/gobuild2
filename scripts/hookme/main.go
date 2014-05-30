@@ -53,8 +53,9 @@ func init() {
 
 func main() {
 	addr := flag.String("http", ":8877", "HTTP service address")
+	hookby := flag.String("hookby", "gogs", "hook by which service")
 	flag.Parse()
 
-	log.Printf("Listening on %s\n", *addr)
+	log.Printf("Hook for %s, Listening on %s\n", *hookby, *addr)
 	log.Fatal(http.ListenAndServe(*addr, nil))
 }
