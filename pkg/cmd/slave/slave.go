@@ -150,7 +150,7 @@ func work(m *xrpc.Mission) (err error) {
 	done <- true
 	notify(models.ST_BUILDING, string(buffer.Bytes()))
 	if err != nil {
-		log.Errorf("gopm build error: %v", err)
+		log.Errorf("build error: %v", err)
 		return
 	}
 	buffer.Reset()
@@ -193,9 +193,6 @@ func init() {
 var IsPrivateUpload bool //todo
 
 func prepare() (err error) {
-	// if err = xrpc.Call("GetQiniuInfo", HOSTINFO, qi); err != nil {
-	// 	return
-	// }
 	TMPDIR, err = filepath.Abs(TMPDIR)
 	if err != nil {
 		log.Errorf("tmpdir to abspath err: %v", err)
