@@ -10,7 +10,6 @@ import (
 )
 
 func setUp() error {
-	log.Error("require go tool installed")
 	var err error
 	var binDir = filepath.Join(SELFDIR, "bin")
 	var tmpDir = filepath.Join(SELFDIR, "tmp/tmp-gopath")
@@ -22,7 +21,8 @@ func setUp() error {
 	sess := sh.NewSession()
 	sess.SetEnv("GOBIN", binDir)
 	sess.SetEnv("GOPATH", tmpDir)
-	if !sh.Test("file", GOPM) {
+	if !sh.Test("x", GOPM) {
+		os.RemoveAll(filepath.Join(binDir, "gopm"))
 		defer os.RemoveAll(tmpDir)
 		err = sess.Command("go", "get", "-u", "-v", "github.com/gpmgo/gopm").Run()
 		if err != nil {

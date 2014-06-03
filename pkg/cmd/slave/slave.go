@@ -76,10 +76,18 @@ func work(m *xrpc.Mission) (err error) {
 	sess.Stdout = io.MultiWriter(buffer, os.Stdout)
 	sess.Stderr = io.MultiWriter(buffer, os.Stderr)
 	sess.ShowCMD = true
-	var gopath, _ = filepath.Abs(TMPDIR)
+	gopath, err := ioutil.TempDir(TMPDIR, time.Now().Format("200601021504-"))
+	if err != nil {
+		log.Errorf("create gopath error: %v", err)
+		return
+	}
+	// fmt.Println(gopath)
+	// return
+	// var gopath, _ = filepath.Abs(TMPDIR)
 	if !sh.Test("dir", gopath) {
 		os.MkdirAll(gopath, 0755)
 	}
+	defer os.RemoveAll(gopath)
 	sess.SetEnv("GOPATH", gopath)
 	sess.SetEnv("CGO_ENABLE", "0")
 	if m.CgoEnable {
@@ -107,6 +115,13 @@ func work(m *xrpc.Mission) (err error) {
 		return nil
 	}
 
+	build := func() (err error) {
+		err = sess.Command("go", "get", "-v", sh.Dir(srcPath)).Run()
+		if err != nil {
+			return
+		}
+		return sess.Command("go", "build", "-v", sh.Dir(srcPath)).Run()
+	}
 	newNotify := func(status string, buf *bytes.Buffer) chan bool {
 		return GoInterval(time.Second*2, func() {
 			notify(status, string(buf.Bytes()))
@@ -125,16 +140,13 @@ func work(m *xrpc.Mission) (err error) {
 	}
 	buffer.Reset()
 
-	// extention := "zip"
-	// var outFile = m.UpKey // fmt.Sprintf("%s-%s-%s.%s", filepath.Base(repoName), m.Os, m.Arch, extention)
 	var outFile = filepath.Base(m.UpKey)
 	var outFullPath = filepath.Join(srcPath, outFile)
 
-	// notify(models.ST_BUILDING, "start building")
 	done = newNotify(models.ST_BUILDING, buffer)
 
-	//sess.Command("go", "get", "-u", "-v", sh.Dir(srcPath)).Run()
-	err = sess.Command(GOPM, "build", "-u", "-v", sh.Dir(srcPath)).Run()
+	// err = sess.Command(GOPM, "build", "-u", "-v", sh.Dir(srcPath)).Run()
+	err = build()
 	done <- true
 	notify(models.ST_BUILDING, string(buffer.Bytes()))
 	if err != nil {
