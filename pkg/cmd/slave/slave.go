@@ -87,6 +87,7 @@ func work(m *xrpc.Mission) (err error) {
 	}
 	sess.SetEnv("GOOS", m.Os)
 	sess.SetEnv("GOARCH", m.Arch)
+	sess.SetTimeout(time.Minute * 10) // timeout in 10minutes
 
 	var repoName = m.Repo
 	var srcPath = filepath.Join(gopath, "src", repoName)
