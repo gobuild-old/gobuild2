@@ -132,14 +132,8 @@ func work(m *xrpc.Mission) (err error) {
 
 	// notify(models.ST_BUILDING, "start building")
 	done = newNotify(models.ST_BUILDING, buffer)
-	// gopm, err := exec.LookPath("gopm")
-	// if err != nil {
-	// 	return
-	// }
-	// gopm, err = filepath.Abs(gopm)
-	// if err != nil {
-	// 	return
-	// }
+
+	//sess.Command("go", "get", "-u", "-v", sh.Dir(srcPath)).Run()
 	err = sess.Command(GOPM, "build", "-u", "-v", sh.Dir(srcPath)).Run()
 	done <- true
 	notify(models.ST_BUILDING, string(buffer.Bytes()))
