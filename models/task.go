@@ -26,29 +26,6 @@ const (
 	AC_SRCPKG = "action-source-package"
 )
 
-type Repository struct {
-	Id      int64
-	Uri     string `xorm:"unique(r)"`
-	Brief   string
-	IsCgo   bool
-	Created time.Time `xorm:"created"`
-}
-
-type RepoStatistic struct {
-	Rid           int64 `xorm:"pk"`
-	Pv            int64
-	DownloadCount int64
-	Updated       time.Time `xorm:"updated"`
-}
-
-type CompileHistory struct {
-	Id        int64
-	CompileId int64
-	Status    string
-	Output    string `xorm:"TEXT"`
-	Updated   string `xorm:"updated"`
-}
-
 type DownloadHistory struct {
 	Id       int64
 	Rid      int64
@@ -67,7 +44,6 @@ type BuildHistory struct {
 	Updated string `xorm:"updated"`
 }
 
-// going to clean
 type Task struct {
 	Id            int64
 	Rid           int64       `xorm:"unique(t)"`
@@ -88,30 +64,9 @@ type Task struct {
 	Updated time.Time `xorm:"updated"`
 }
 
-type LastRepoUpdate struct {
-	Rid        int64  `xorm:"unique(u)"`
-	TagBranch  string `xorm:"unique(u)"`
-	Os         string `xorm:"unique(u)"`
-	Arch       string `xorm:"unique(u)"`
-	PushURI    string
-	ZipBallUrl string
-	Updated    time.Time `xorm:"updated"`
-}
-
-func GetAllLastRepoByOsArch(os, arch string) (us []LastRepoUpdate, err error) {
-	err = orm.Asc("rid").Find(&us, &LastRepoUpdate{Os: os, Arch: arch})
-	return us, err
-}
-
-func GetAllLastRepoUpdate(rid int64) (us []LastRepoUpdate, err error) {
-	err = orm.Find(&us, &LastRepoUpdate{Rid: rid})
-	return
-}
-
 var (
 	ErrTaskNotAvaliable    = errors.New("not task ready for build now")
 	ErrTaskNotExists       = errors.New("task not exists")
-	ErrRepositoryNotExists = errors.New("repo not found")
 	ErrNoAvaliableDownload = errors.New("no avaliable download")
 	ErrTaskIsRunning       = errors.New("task is running")
 )
@@ -130,15 +85,6 @@ func init() {
 		Token: &oauth.Token{AccessToken: githubPublicAccessToken},
 	}
 	GHClient = github.NewClient(t.Client())
-}
-
-func CreateRepository(r *Repository) (*Repository, error) {
-	// r := &Repository{Uri: repoUri}
-	if has, err := orm.Get(r); err == nil && has {
-		return r, nil
-	}
-	_, err := orm.Insert(r)
-	return r, err
 }
 
 func CreateNewBuilding(rid int64, branch string, os, arch string, action string) (err error) {
@@ -176,20 +122,6 @@ func CreateNewBuilding(rid int64, branch string, os, arch string, action string)
 	}
 	_, err = CreateTask(task)
 	return
-}
-
-func GetAllRepos(count, start int) ([]Repository, error) {
-	var rs []Repository
-	err := orm.Limit(count, start).Desc("created").Find(&rs)
-	return rs, err
-}
-
-func GetRepositoryById(id int64) (*Repository, error) {
-	r := new(Repository)
-	if has, err := orm.Id(id).Get(r); err == nil && has {
-		return r, nil
-	}
-	return nil, ErrRepositoryNotExists
 }
 
 func CreateTasks(tasks []*Task) error {
