@@ -34,7 +34,7 @@ type QiniuInfo struct {
 
 type PublishInfo struct {
 	Mid        int64
-	ZipBallURL string
+	ZipBallUrl string
 }
 
 type MissionStatus struct {
@@ -159,7 +159,7 @@ type PkgInfo struct {
 func (r *Rpc) UpdatePubAddr(args *PublishInfo, reply *bool) error {
 	log.Infof("pub addr %v", *args)
 	*reply = true
-	err := models.UpdatePubAddr(args.Mid, args.ZipBallURL)
+	err := models.UpdatePubAddr(args.Mid, args.ZipBallUrl)
 	return err
 
 }

@@ -21,7 +21,7 @@ func Download(ctx *middleware.Context) {
 		return
 	}
 	models.RefreshPageView("/d/" + ctx.Query("rid"))
-	ctx.Redirect(302, task.ZipBallURL)
+	ctx.Redirect(302, task.ZipBallUrl)
 }
 
 func TriggerBuildRepositoryById(rid int64) (err error) {

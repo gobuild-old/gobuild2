@@ -182,7 +182,7 @@ func reportProgress(mid int64, status string, output string) error {
 func reportPubAddr(mid int64, zipballurl string) error {
 	pubinfo := &xrpc.PublishInfo{
 		Mid:        mid,
-		ZipBallURL: zipballurl,
+		ZipBallUrl: zipballurl,
 	}
 	ok := false
 	err := xrpc.Call("UpdatePubAddr", pubinfo, &ok)

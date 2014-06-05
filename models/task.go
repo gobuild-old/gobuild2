@@ -41,26 +41,6 @@ type RepoStatistic struct {
 	Updated       time.Time `xorm:"updated"`
 }
 
-type Commit struct {
-	Id     int64
-	Rid    int64
-	Sha    string `xorm:"unique(t)"`
-	Tag    string `xorm:"unique(t)"`
-	Branch string `xorm:"unique(t)"`
-}
-
-type Compile struct {
-	Id           int64
-	CommitId     int64 // commit id
-	IsSrcPackage bool
-	IsCgo        bool
-	Os           string
-	Arch         string
-	ZipBallUrl   string
-	Created      time.Time `xorm:"created"`
-	Updated      time.Time `xorm:"updated"`
-}
-
 type CompileHistory struct {
 	Id        int64
 	CompileId int64
@@ -97,7 +77,7 @@ type Task struct {
 	Arch          string      `xorm:"unique(t)"`
 	CgoEnable     bool
 	CommitMessage string
-	ZipBallURL    string
+	ZipBallUrl    string
 
 	TagBranch string
 	PushType  string //`xorm:"unique(t)"` // branch|tag|commit
@@ -139,7 +119,6 @@ var (
 func init() {
 	tables = append(tables, new(Task),
 		new(Repository), new(RepoStatistic), new(LastRepoUpdate),
-		// new(Commit), new(Compile), new(CompileHistory),
 		new(DownloadHistory), new(BuildHistory))
 }
 
@@ -296,7 +275,7 @@ func UpdatePubAddr(tid int64, pubAddr string) error {
 			log.Errorf("insert last_repo_update failed: %v", err)
 		}
 	}
-	if _, err := orm.Id(tid).Update(&Task{ZipBallURL: pubAddr}); err != nil {
+	if _, err := orm.Id(tid).Update(&Task{ZipBallUrl: pubAddr}); err != nil {
 		return err
 	}
 	return nil
