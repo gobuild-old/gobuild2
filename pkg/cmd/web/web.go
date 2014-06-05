@@ -53,7 +53,6 @@ func Action(c *cli.Context) {
 	m.Get("/ruok", routers.Ruok)
 	m.Any("/", routers.Home)
 	m.Any("/repo", routers.Repo)
-	m.Get("/**", routers.Repo)
 	m.Any("/history", routers.History)
 	m.Any("/download", routers.Download)
 	m.Post("/new-repo", binding.Bind(routers.RepoInfoForm{}), routers.NewRepo)
@@ -65,8 +64,9 @@ func Action(c *cli.Context) {
 		m.Post("/force-rebuild", binding.Bind(routers.TaskForm{}), routers.ForceRebuild)
 	})
 
+	m.Get("/**", routers.Repo) // for the rest of request
 	// Not found handler.
-	m.NotFound(routers.NotFound)
+	// m.NotFound(routers.NotFound)
 
 	http.Handle("/", m)
 
