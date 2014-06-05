@@ -57,6 +57,14 @@ func GetRepositoryById(id int64) (*Repository, error) {
 	return nil, ErrRepositoryNotExists
 }
 
+func GetRepositoryByName(name string) (*Repository, error) {
+	r := &Repository{Uri: name}
+	if has, err := orm.Get(r); err == nil && has {
+		return r, nil
+	}
+	return nil, ErrRepositoryNotExists
+}
+
 func GetAllLastRepoByOsArch(os, arch string) (us []LastRepoUpdate, err error) {
 	err = orm.Asc("rid").Find(&us, &LastRepoUpdate{Os: os, Arch: arch})
 	return us, err

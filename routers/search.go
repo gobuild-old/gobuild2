@@ -8,7 +8,7 @@ import (
 
 func Search(ctx *middleware.Context) {
 	log.Info(ctx.Request.RequestURI)
-	pv := models.RefreshPageView(ctx.Request.RequestURI) // "/search")
+	pv := models.RefreshPageView(ctx.Request.RequestURI)
 	repos, err := models.GetAllRepos(50, 0)
 	if err != nil {
 		log.Errorf("get repos from db error: %v", err)

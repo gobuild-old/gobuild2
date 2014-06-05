@@ -62,24 +62,48 @@ func ForceRebuild(tf TaskForm, ctx *middleware.Context) {
 }
 
 func Repo(ctx *middleware.Context, params martini.Params, req *http.Request) {
-	id, _ := strconv.Atoi(req.FormValue("id"))
-	rid := int64(id)
-	repo, err := models.GetRepositoryById(rid)
-	if err != nil {
-		log.Errorf("get single repo from db error: %v", err)
+	reponame := params["_1"]
+	var repo *models.Repository
+	var err error
+	var tasks []models.Task
+	var recentTask *models.Task
+	if reponame != "" {
+		repo, err = models.GetRepositoryByName(reponame)
+		if err == models.ErrRepositoryNotExists {
+			r, er := AddRepo(reponame)
+			if er != nil {
+				err = er
+				ctx.Data["Error"] = err.Error()
+				ctx.HTML(200, "repo")
+				return
+			}
+			TriggerBuildRepositoryById(r.Id)
+			ctx.Redirect(302, req.RequestURI)
+			return
+		}
+		if err != nil {
+			log.Errorf("get single repo from db error: %v", err)
+		}
+	} else {
+		id, _ := strconv.Atoi(req.FormValue("id"))
+		rid := int64(id)
+		repo, err = models.GetRepositoryById(rid)
+		if err != nil {
+			log.Errorf("get single repo from db error: %v", err)
+		}
 	}
-	tasks, err := models.GetTasksByRid(rid)
+	tasks, err = models.GetTasksByRid(repo.Id)
 	if err != nil {
 		log.Errorf("get tasks by id, error: %v", err)
 	}
-	recentTask, _ := models.GetTaskById(1)
+	recentTask, _ = models.GetTaskById(1)
 	ctx.Data = map[string]interface{}{
 		"Repo":       repo,
 		"RecentTask": recentTask,
 		"Tasks":      tasks,
 		"DownCnt":    models.RefreshPageView("/d/"+ctx.Query("id"), 0),
 	}
-	rus, err := models.GetAllLastRepoUpdate(rid)
+	rus, err := models.GetAllLastRepoUpdate(repo.Id)
 	if err != nil {
 		log.Error("get last repo error: %v", err)
 	}

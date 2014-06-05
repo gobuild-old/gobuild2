@@ -53,6 +53,7 @@ func Action(c *cli.Context) {
 	m.Get("/ruok", routers.Ruok)
 	m.Any("/", routers.Home)
 	m.Any("/repo", routers.Repo)
+	m.Get("/**", routers.Repo)
 	m.Any("/history", routers.History)
 	m.Any("/download", routers.Download)
 	m.Post("/new-repo", binding.Bind(routers.RepoInfoForm{}), routers.NewRepo)

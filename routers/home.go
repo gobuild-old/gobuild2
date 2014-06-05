@@ -24,15 +24,18 @@ type TaskForm struct {
 
 func NewRepo(rf RepoInfoForm, ctx *middleware.Context) {
 	defer ctx.Redirect(302, "/")
-	var err error
-	cvsinfo, err := base.ParseCvsURI(rf.Name) // base.SanitizedRepoPath(rf.Name)
+	AddRepo(rf.Name)
+}
+
+func AddRepo(repoName string) (r *models.Repository, err error) {
+	cvsinfo, err := base.ParseCvsURI(repoName) // base.SanitizedRepoPath(rf.Name)
 	if err != nil {
 		log.Errorf("parse cvs url error: %v", err)
 		return
 	}
 
 	repoUri := cvsinfo.FullPath
-	r := new(models.Repository)
+	r = new(models.Repository)
 	r.Uri = repoUri
 
 	pkginfo, err := gowalker.GetCmdPkgInfo(repoUri)
@@ -59,6 +62,7 @@ func NewRepo(rf RepoInfoForm, ctx *middleware.Context) {
 		log.Errorf("create repo error: %v", err)
 		return
 	}
+	return r, nil
 }
 
 func Home(ctx *middleware.Context) {
