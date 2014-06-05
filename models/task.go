@@ -21,6 +21,11 @@ const (
 	ST_ERROR      = "error"
 )
 
+const (
+	AC_BUILD  = "action-build"
+	AC_SRCPKG = "action-source-package"
+)
+
 type Repository struct {
 	Id      int64
 	Uri     string `xorm:"unique(r)"`
@@ -36,6 +41,34 @@ type RepoStatistic struct {
 	Updated       time.Time `xorm:"updated"`
 }
 
+type Commit struct {
+	Id     int64
+	Rid    int64
+	Sha    string `xorm:"unique(t)"`
+	Tag    string `xorm:"unique(t)"`
+	Branch string `xorm:"unique(t)"`
+}
+
+type Compile struct {
+	Id           int64
+	CommitId     int64 // commit id
+	IsSrcPackage bool
+	IsCgo        bool
+	Os           string
+	Arch         string
+	ZipBallUrl   string
+	Created      time.Time `xorm:"created"`
+	Updated      time.Time `xorm:"updated"`
+}
+
+type CompileHistory struct {
+	Id        int64
+	CompileId int64
+	Status    string
+	Output    string `xorm:"TEXT"`
+	Updated   string `xorm:"updated"`
+}
+
 type DownloadHistory struct {
 	Id       int64
 	Rid      int64
@@ -45,6 +78,7 @@ type DownloadHistory struct {
 	CurrTime time.Time `xorm:"created"`
 }
 
+// going to clean
 type BuildHistory struct {
 	Id      int64
 	Tid     int64  `xorm:"unique(b)"`
@@ -53,18 +87,21 @@ type BuildHistory struct {
 	Updated string `xorm:"updated"`
 }
 
+// going to clean
 type Task struct {
 	Id            int64
 	Rid           int64       `xorm:"unique(t)"`
 	Repo          *Repository `xorm:"-"`
+	Action        string      `xorm:"unique(t)"` // build or package
 	Os            string      `xorm:"unique(t)"`
 	Arch          string      `xorm:"unique(t)"`
 	CgoEnable     bool
 	CommitMessage string
-	ArchieveAddr  string
+	ZipBallURL    string
 
-	Branch string
-	Sha    string `xorm:"unique(t)"`
+	TagBranch string
+	PushType  string //`xorm:"unique(t)"` // branch|tag|commit
+	PushValue string `xorm:"unique(t)"` //master|v1.2|45asf913
 
 	Status  string
 	Created time.Time `xorm:"created"`
@@ -76,7 +113,7 @@ type LastRepoUpdate struct {
 	TagBranch  string `xorm:"unique(u)"`
 	Os         string `xorm:"unique(u)"`
 	Arch       string `xorm:"unique(u)"`
-	Sha        string
+	PushURI    string
 	ZipBallUrl string
 	Updated    time.Time `xorm:"updated"`
 }
@@ -102,6 +139,7 @@ var (
 func init() {
 	tables = append(tables, new(Task),
 		new(Repository), new(RepoStatistic), new(LastRepoUpdate),
+		// new(Commit), new(Compile), new(CompileHistory),
 		new(DownloadHistory), new(BuildHistory))
 }
 
@@ -124,14 +162,17 @@ func CreateRepository(r *Repository) (*Repository, error) {
 	return r, err
 }
 
-func CreateNewBuilding(rid int64, branch string, os, arch string) (err error) {
+func CreateNewBuilding(rid int64, branch string, os, arch string, action string) (err error) {
 	repo, err := GetRepositoryById(rid)
 	if err != nil {
 		return
 	}
 	task := &Task{
 		Rid:       rid,
-		Branch:    branch,
+		Action:    action,
+		TagBranch: branch,
+		PushType:  "branch",
+		PushValue: branch,
 		Os:        os,
 		Arch:      arch,
 		CgoEnable: repo.IsCgo,
@@ -148,7 +189,8 @@ func CreateNewBuilding(rid int64, branch string, os, arch string) (err error) {
 			return
 		}
 		log.Infof("get information from github:%v", info)
-		task.Sha = *info.Commit.SHA
+		task.PushType = "commit"
+		task.PushValue = *info.Commit.SHA
 		if info.Commit.Message != nil {
 			task.CommitMessage = *info.Commit.Message
 		}
@@ -169,6 +211,14 @@ func GetRepositoryById(id int64) (*Repository, error) {
 		return r, nil
 	}
 	return nil, ErrRepositoryNotExists
+}
+
+func CreateTasks(tasks []*Task) error {
+	for _, t := range tasks {
+		t.Status = ST_READY
+	}
+	_, err := orm.Insert(tasks)
+	return err
 }
 
 func CreateTask(task *Task) (*Task, error) {
@@ -225,29 +275,61 @@ func ResetAllTaskStatus() error {
 	return err
 }
 
-func UpdateTaskStatus(tid int64, status string, output string) error {
-	pubAddr := ""
-	if status == ST_DONE {
-		pubAddr = output
-		tk, _ := GetTaskById(tid)
-		condi := LastRepoUpdate{
-			Rid:       tk.Rid,
-			TagBranch: tk.Branch,
-			Os:        tk.Os,
-			Arch:      tk.Arch}
-		lr := condi
-		if has, err := orm.Get(&lr); err == nil && has {
-			orm.Update(&LastRepoUpdate{Sha: tk.Sha, ZipBallUrl: pubAddr}, &condi)
-		} else {
-			condi.ZipBallUrl = pubAddr
-			condi.Sha = tk.Sha
-			if _, err := orm.Insert(&condi); err != nil {
-				log.Errorf("insert last_repo_update failed: %v", err)
-			}
+func UpdatePubAddr(tid int64, pubAddr string) error {
+	tk, err := GetTaskById(tid)
+	if err != nil {
+		return err
+	}
+	condi := LastRepoUpdate{
+		Rid:       tk.Rid,
+		TagBranch: tk.TagBranch,
+		Os:        tk.Os,
+		Arch:      tk.Arch}
+	lr := condi
+	pushURI := tk.PushType + ":" + tk.PushValue
+	if has, err := orm.Get(&lr); err == nil && has {
+		orm.Update(&LastRepoUpdate{PushURI: pushURI, ZipBallUrl: pubAddr}, &condi)
+	} else {
+		condi.ZipBallUrl = pubAddr
+		condi.PushURI = pushURI
+		if _, err := orm.Insert(&condi); err != nil {
+			log.Errorf("insert last_repo_update failed: %v", err)
 		}
 	}
-	if _, err := orm.Id(tid).Update(&Task{Status: status, ArchieveAddr: pubAddr}); err != nil {
+	if _, err := orm.Id(tid).Update(&Task{ZipBallURL: pubAddr}); err != nil {
 		return err
+	}
+	return nil
+}
+
+func UpdateTaskStatus(tid int64, status string, output string) error {
+	// pubAddr := ""
+	// if status == ST_DONE {
+	// 	pubAddr = output
+	// 	tk, _ := GetTaskById(tid)
+	// 	condi := LastRepoUpdate{
+	// 		Rid:       tk.Rid,
+	// 		TagBranch: tk.TagBranch,
+	// 		Os:        tk.Os,
+	// 		Arch:      tk.Arch}
+	// 	lr := condi
+	// 	pushURI := tk.PushType + ":" + tk.PushValue
+	// 	if has, err := orm.Get(&lr); err == nil && has {
+	// 		orm.Update(&LastRepoUpdate{PushURI: pushURI, ZipBallUrl: pubAddr}, &condi)
+	// 	} else {
+	// 		condi.ZipBallUrl = pubAddr
+	// 		condi.PushURI = pushURI
+	// 		if _, err := orm.Insert(&condi); err != nil {
+	// 			log.Errorf("insert last_repo_update failed: %v", err)
+	// 		}
+	// 	}
+	// }
+	// if _, err := orm.Id(tid).Update(&Task{Status: status, ArchieveAddr: pubAddr}); err != nil {
+	// 	return err
+	// }
+	log.Debugf("update task(%d) status(%s)", tid, status)
+	if _, err := orm.Id(tid).Update(&Task{Status: status}); err != nil {
+		log.Errorf("update task status error: %v", err)
 	}
 	condi := &BuildHistory{Tid: tid, Status: status}
 	if has, err := orm.Get(condi); err == nil && has {
@@ -256,6 +338,17 @@ func UpdateTaskStatus(tid int64, status string, output string) error {
 	}
 	_, err := orm.Insert(&BuildHistory{Tid: tid, Status: status, Output: output})
 	return err
+}
+
+func GetAvaliableTasks(os, arch string) (tasks []*Task, err error) {
+	t, e := GetAvaliableTask(os, arch)
+	if e != nil {
+		return nil, e
+	}
+	if t.CgoEnable {
+		return []*Task{t}, nil
+	}
+	return []*Task{t}, nil
 }
 
 func GetAvaliableTask(os, arch string) (task *Task, err error) {

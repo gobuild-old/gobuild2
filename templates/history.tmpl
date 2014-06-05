@@ -16,12 +16,13 @@
 	<h2>Build History {{.AutoRefresh}}</h2>
 	<div>
 		<h4><a href="/repo?id={{.Task.Rid}}">{{.Task.Repo.Uri}}</a>
-			<a class="pull-right" href="{{.Task.ArchieveAddr}}">download <span class="glyphicon glyphicon-arrow-down"></span></a>
+			<a class="pull-right" href="{{.Task.ZipBallURL}}">download <span class="glyphicon glyphicon-arrow-down"></span></a>
 		</h4>
 		<div>
 			<p>
 			task-id: {{.Task.Id}}<br/>
-			commits: {{.Task.Sha}}<br/>
+			action: {{.Task.Action}}<br/>
+			{{.Task.PushType}}: {{.Task.PushValue}}<br/>
 			start-time: {{.Task.Created }}<br/>
 			last-update: {{.Task.Updated | timesince}} ago<br/>
 			status:<span {{if eq .Task.Status "error"}}style="color:red"{{end}}>{{.Task.Status}}</span><br>

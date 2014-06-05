@@ -3,14 +3,17 @@
 <script>
   $(document).on("click", "input.click-select", function(e) {
         $(e.target).select();
-    });
+  });
+  $(function(){
+  		$("#platform").text(navigator.platform);
+  })
 </script>
 <div class="container">
 <div>
-	<a href="https://{{.Repo.Uri}}">[view-source]</a> <b>{{.Repo.Uri}}</b> - last commit: af87asdfsdf
+	<a href="https://{{.Repo.Uri}}">[view-source]</a> <b>{{.Repo.Uri}}</b>
 </div>
 <p>{{.Repo.Brief}}</p>
-<div>auto-detected: mac</div>
+<div>auto-detected: <span id="platform"></span></div>
 <div class="row">
 	<div class="col-md-8">
 		<div class="well">
@@ -34,6 +37,7 @@
 				<a href="/download?os=linux&arch={{if .Repo.IsCgo}}amd64{{else}}386{{end}}&rid={{.Repo.Id}}" class="active" style="color:black">download</a></span></li>
 			<li class="list-group-item">Mac<span class="badge"><a href="/download?os=darwin&arch=amd64&rid={{.Repo.Id}}" class="active" style="color:black">download</a></span></li>
 			<li class="list-group-item">Windows<span class="badge"><a href="/download?os=windows&arch=386&rid={{.Repo.Id}}" class="active" style="color:black">download</a></span></li>
+			<li class="list-group-item">FullSourceCode<span class="badge"><a href="/download?os=&arch=&rid={{.Repo.Id}}" class="active" style="color:blue">download</a></span></li>
 		</ul>
 	</div>
 </div>
@@ -49,7 +53,7 @@
 				<input type="hidden" name="tid" value="{{.Id}}">
 				<button class="btn btn-default btn-xs">rebuid</button>
 			</form>
-			<a class="pull-right" href="{{.ArchieveAddr}}">download
+			<a class="pull-right" href="{{.ZipBallURL}}">download
 			<span class="glyphicon glyphicon-floppy-save"></span></a>
 		</td>
 		</tr>

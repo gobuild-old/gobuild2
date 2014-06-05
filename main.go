@@ -9,6 +9,7 @@ import (
 	"github.com/gobuild/gobuild2/pkg/cmd/runinit"
 	"github.com/gobuild/gobuild2/pkg/cmd/slave"
 	"github.com/gobuild/gobuild2/pkg/cmd/web"
+	"github.com/gobuild/log"
 )
 
 const VERSION = "0.0.1.0522"
@@ -62,5 +63,6 @@ func init() {
 }
 
 func main() {
+	log.SetOutputLevel(log.Ldebug)
 	app.Run(os.Args)
 }

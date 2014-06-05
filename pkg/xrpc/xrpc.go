@@ -10,6 +10,7 @@ import (
 
 	"github.com/Unknwon/com"
 	"github.com/gobuild/gobuild2/models"
+	"github.com/gobuild/gobuild2/pkg/base"
 	"github.com/gobuild/gobuild2/pkg/config"
 	"github.com/gobuild/log"
 	"github.com/qiniu/api/conf"
@@ -26,9 +27,14 @@ type HostInfo struct {
 }
 
 type QiniuInfo struct {
-	AccessKey string
-	SecretKey string
-	Bulket    string
+	Key    string
+	Token  string
+	Bulket string
+}
+
+type PublishInfo struct {
+	Mid        int64
+	ZipBallURL string
 }
 
 type MissionStatus struct {
@@ -42,18 +48,26 @@ type Mission struct {
 	Idle time.Duration
 	Mid  int64
 
-	Repo   string
-	Branch string
-	Sha    string
-
-	UpToken string // for qiniu upload
-	UpKey   string // for qiniu upload
-	Bulket  string
+	Repo    string
+	PushURI string
 
 	CgoEnable bool
-	Os, Arch  string
 
 	PkgInfo []byte // store it to gobuild.pkginfo
+	Builds  []BuildInfo
+}
+
+const (
+	UT_QINIU = "up-qiniu"
+	UT_FTP   = "up-ftp"
+)
+
+type BuildInfo struct {
+	Action     string // build or just package source
+	CgoEnable  bool
+	Os, Arch   string
+	UploadType string // cnd(like qiniu) or ftp
+	UploadData string // encoded data
 }
 
 func Call(method string, args interface{}, reply interface{}) error {
@@ -65,6 +79,72 @@ func Call(method string, args interface{}, reply interface{}) error {
 	return client.Call("Rpc."+method, args, reply)
 }
 
+var defaultBulket string
+
+// generate qiniu token
+func qntoken(key string) string {
+	scope := defaultBulket + ":" + key
+	log.Infof("qiniu scrope: %s", scope)
+	policy := rs.PutPolicy{
+		Expires: uint32(time.Now().Unix() + 3600),
+		Scope:   scope,
+	}
+	return policy.Token(nil)
+}
+
+func (r *Rpc) GetMission(args *HostInfo, rep *Mission) error {
+	log.Debugf("arch: %v, host: %v", args.Arch, args.Host)
+	tasks, err := models.GetAvaliableTasks(args.Os, args.Arch)
+	if err == models.ErrTaskNotAvaliable {
+		rep.Idle = time.Second * 3
+		return nil
+	}
+	if err != nil {
+		log.Errorf("rpc: get mission error: %v", err)
+		return err
+	}
+
+	task := tasks[0] // use first task
+	rep.Mid = task.Id
+	rep.Repo = task.Repo.Uri
+	rep.PushURI = task.PushType + ":" + task.PushValue
+	rep.CgoEnable = task.CgoEnable
+	rep.PkgInfo, _ = json.MarshalIndent(PkgInfo{
+		PushURI:     task.PushType + ":" + task.PushValue,
+		Author:      []string{"unknown"},
+		Description: "unknown",
+	}, "", "    ")
+
+	for _, tk := range tasks {
+		if tk.TagBranch == "" {
+			tk.TagBranch = "temp-" + tk.PushType + ":" + tk.PushValue
+		}
+		filename := fmt.Sprintf("%s-%s-%s.%s", filepath.Base(rep.Repo), tk.Os, tk.Arch, "zip")
+		if tk.Action == models.AC_SRCPKG {
+			filename = fmt.Sprintf("%s-all-source.%s", filepath.Base(rep.Repo), "zip")
+		}
+		key := com.Expand("m{tid}/{reponame}/br-{branch}/{filename}", map[string]string{
+			"tid":      strconv.Itoa(int(rep.Mid)),
+			"reponame": rep.Repo,
+			"branch":   tk.TagBranch,
+			"filename": filename,
+		})
+		bi := BuildInfo{
+			Action:     tk.Action,
+			Os:         tk.Os,
+			Arch:       tk.Arch,
+			UploadType: UT_QINIU,
+			UploadData: base.Objc2Str(QiniuInfo{
+				Bulket: defaultBulket,
+				Key:    key,
+				Token:  qntoken(key),
+			}),
+		}
+		rep.Builds = append(rep.Builds, bi)
+	}
+	return nil
+}
+
 type PkgInfo struct {
 	MainFile    string   `json:"main_file"`
 	Author      []string `json:"author"`
@@ -73,56 +153,19 @@ type PkgInfo struct {
 	Created     string   `json:"created"`
 	Os          string   `json:"os"`
 	Arch        string   `json:"arch"`
-	Sha         string   `json:"sha"`
+	PushURI     string   `json:"push_uri"`
 }
 
-var defaultBulket string
+func (r *Rpc) UpdatePubAddr(args *PublishInfo, reply *bool) error {
+	log.Infof("pub addr %v", *args)
+	*reply = true
+	err := models.UpdatePubAddr(args.Mid, args.ZipBallURL)
+	return err
 
-func (r *Rpc) GetMission(args *HostInfo, rep *Mission) error {
-	log.Infof("arch: %v", args.Arch)
-	log.Infof("host: %v", args.Host)
-	task, err := models.GetAvaliableTask(args.Os, args.Arch)
-	switch err {
-	case nil:
-		rep.CgoEnable = task.CgoEnable
-		rep.Os, rep.Arch = task.Os, task.Arch
-		rep.Mid = task.Id
-		rep.Repo = task.Repo.Uri
-		rep.Branch = task.Branch
-		rep.Sha = task.Sha
-
-		// rep.UpKey
-		filename := fmt.Sprintf("%s-%s-%s.%s", filepath.Base(rep.Repo), rep.Os, rep.Arch, "zip")
-		rep.UpKey = com.Expand("m{tid}/{reponame}/br-{branch}/{filename}", map[string]string{
-			"tid":      strconv.Itoa(int(rep.Mid)),
-			"reponame": rep.Repo,
-			"branch":   rep.Branch,
-			"filename": filename,
-		})
-		policy := rs.PutPolicy{
-			Scope: defaultBulket + ":" + rep.UpKey,
-		}
-		policy.Expires = uint32(time.Now().Unix() + 3600)
-		rep.UpToken = policy.Token(nil)
-		rep.Bulket = defaultBulket
-
-		// todo
-		rep.PkgInfo, _ = json.MarshalIndent(PkgInfo{
-			Sha:         task.Sha,
-			Author:      []string{"unknown"},
-			Description: "unknown",
-		}, "", "    ")
-		return nil
-	case models.ErrTaskNotAvaliable:
-		rep.Idle = time.Second * 3
-		return nil
-	default:
-		return err
-	}
 }
 
 func (r *Rpc) UpdateMissionStatus(args *MissionStatus, reply *bool) error {
-	log.Infof("update status: mid(%d) status(%s) extra(%s)", args.Mid, args.Status, args.Extra)
+	log.Debugf("update status: mid(%d) status(%s) extra(%s)", args.Mid, args.Status, args.Extra)
 	*reply = true
 	err := models.UpdateTaskStatus(args.Mid, args.Status, args.Output)
 	return err

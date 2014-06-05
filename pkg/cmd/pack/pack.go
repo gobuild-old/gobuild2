@@ -40,7 +40,9 @@ func findFiles(path string, depth int, skips []*regexp.Regexp) ([]string, error)
 		// log.Println(isSkip, name)
 		if !isSkip {
 			files = append(files, path)
-			log.Info("add file:", name, path)
+		}
+		if isSkip && info.IsDir() {
+			return filepath.SkipDir
 		}
 		return nil
 	})
@@ -124,16 +126,17 @@ func Action(c *cli.Context) {
 		if err = sess.Command(gom, "build").Run(); err != nil {
 			return
 		}
+		cwd, _ := os.Getwd()
+		program := filepath.Base(cwd)
+		if goos == "windows" {
+			program += ".exe"
+		}
+		files = append(files, program)
 	}
-	cwd, _ := os.Getwd()
-	program := filepath.Base(cwd)
-	if goos == "windows" {
-		program += ".exe"
-	}
-	files = append(files, program)
 
 	log.Debug("archive files")
 	for _, file := range files {
+		log.Infof("zip add file: %v", file)
 		if err = z.Add(file); err != nil {
 			return
 		}
