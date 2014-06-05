@@ -21,7 +21,7 @@ func Download(ctx *middleware.Context) {
 		return
 	}
 	models.RefreshPageView("/d/" + ctx.Query("rid"))
-	ctx.Redirect(302, task.ArchieveAddr)
+	ctx.Redirect(302, task.ZipBallUrl)
 }
 
 func TriggerBuildRepositoryById(rid int64) (err error) {
@@ -40,11 +40,12 @@ func TriggerBuildRepositoryById(rid int64) (err error) {
 		oas["linux"] = "amd64"
 	}
 	for os, arch := range oas {
-		err := models.CreateNewBuilding(rid, "master", os, arch)
+		err := models.CreateNewBuilding(rid, "master", os, arch, models.AC_BUILD)
 		if err != nil {
 			log.Errorf("create module error: %v", err)
 		}
 	}
+	models.CreateNewBuilding(rid, "master", "", "", models.AC_SRCPKG)
 	return nil
 }
 

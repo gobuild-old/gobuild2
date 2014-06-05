@@ -20,10 +20,10 @@ type Qiniu struct {
 func (q *Qiniu) Upload(local string) (pubAddr string, err error) {
 	var ret io.PutRet
 	var extra = &io.PutExtra{}
+	log.Infof("upload(qiniu) token: %s, key: %s, local: %s", q.uptoken, q.key, local)
 	if err = io.PutFile(nil, &ret, q.uptoken, q.key, local, extra); err != nil {
 		return
 	}
-	log.Infof("upload success:%v", ret)
 	pubAddr = "http://" + q.bulket + ".qiniudn.com/" + q.key
 	return
 }

@@ -38,7 +38,7 @@ func PkgList(ctx *middleware.Context) {
 			if pos := len(result) - 1; pos >= 0 {
 				r := result[pos]
 				r.Branches = append(r.Branches,
-					Branch{lr.TagBranch, lr.Sha, fmtTime(lr.Updated), lr.Os, lr.Arch, lr.ZipBallUrl})
+					Branch{lr.TagBranch, lr.PushURI, fmtTime(lr.Updated), lr.Os, lr.Arch, lr.ZipBallUrl})
 			}
 			continue
 		}
@@ -48,7 +48,7 @@ func PkgList(ctx *middleware.Context) {
 			log.Errorf("a missing repo in last_repo_update: %v", lr)
 			continue
 		}
-		br := Branch{lr.TagBranch, lr.Sha, fmtTime(lr.Updated), lr.Os, lr.Arch, lr.ZipBallUrl}
+		br := Branch{lr.TagBranch, lr.PushURI, fmtTime(lr.Updated), lr.Os, lr.Arch, lr.ZipBallUrl}
 		result = append(result, &PackageItem{
 			Name:        repo.Uri,   // "github.com/nsf/gocode",
 			Description: repo.Brief, // "golang code complete",
