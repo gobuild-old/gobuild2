@@ -38,6 +38,7 @@ type PackageItem struct {
 	ImportPath  string `json:"import_path"`
 	IsCgo       bool   `json:"cgo"`
 	IsCmd       bool   `json:"cmd"`
+	Tags        string `json:"tags"` // like "master|||1.0.0RC1|||beego1.0.0|||", split by |||
 	Description string `json:"synopsis"`
 }
 
@@ -74,6 +75,7 @@ func GetCmdPkgInfo(pkgname string) (*PackageItem, error) {
 	return pkginfo, err
 }
 
+// https://gowalker.org/api/v1/pkginfo?pkgname=github.com/astaxie/beego
 func GetPkgInfo(pkgname string) (*PackageItem, error) {
 	err := RefreshPkg(pkgname)
 	if err != nil {

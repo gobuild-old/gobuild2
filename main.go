@@ -12,7 +12,7 @@ import (
 	"github.com/gobuild/log"
 )
 
-const VERSION = "0.0.1.0522"
+const VERSION = "0.0.1.0607"
 
 var app = cli.NewApp()
 

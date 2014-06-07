@@ -2,7 +2,12 @@ package models
 
 import (
 	"errors"
+	"strings"
 	"time"
+
+	"github.com/gobuild/gobuild2/pkg/base"
+	"github.com/gobuild/gobuild2/pkg/gowalker"
+	"github.com/gobuild/log"
 )
 
 var (
@@ -14,6 +19,8 @@ type Repository struct {
 	Uri     string `xorm:"unique(r)"`
 	Brief   string
 	IsCgo   bool
+	IsCmd   bool
+	Tags    []string
 	Created time.Time `xorm:"created"`
 }
 
@@ -32,6 +39,46 @@ type LastRepoUpdate struct {
 	PushURI    string
 	ZipBallUrl string
 	Updated    time.Time `xorm:"updated"`
+}
+
+func AddRepository(repoName string) (r *Repository, err error) {
+	cvsinfo, err := base.ParseCvsURI(repoName) // base.SanitizedRepoPath(rf.Name)
+	if err != nil {
+		log.Errorf("parse cvs url error: %v", err)
+		return
+	}
+
+	repoUri := cvsinfo.FullPath
+	r = new(Repository)
+	r.Uri = repoUri
+
+	pkginfo, err := gowalker.GetPkgInfo(repoUri)
+	if err != nil {
+		log.Errorf("gowalker not passed check: %v", err)
+		return
+	}
+	r.IsCgo = pkginfo.IsCgo
+	r.IsCmd = pkginfo.IsCmd
+	r.Tags = strings.Split(pkginfo.Tags, "|||")
+	// description
+	r.Brief = pkginfo.Description
+	base.ParseCvsURI(repoUri)
+	if strings.HasPrefix(repoUri, "github.com") {
+		// comunicate with github
+		fields := strings.Split(repoUri, "/")
+		owner, repoName := fields[1], fields[2]
+		repo, _, err := GHClient.Repositories.Get(owner, repoName)
+		if err != nil {
+			log.Errorf("get information from github error: %v", err)
+		} else {
+			r.Brief = *repo.Description
+		}
+	}
+	if _, err = CreateRepository(r); err != nil {
+		log.Errorf("create repo error: %v", err)
+		return
+	}
+	return r, nil
 }
 
 func CreateRepository(r *Repository) (*Repository, error) {

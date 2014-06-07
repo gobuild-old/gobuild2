@@ -56,7 +56,7 @@ type Task struct {
 	ZipBallUrl    string
 
 	TagBranch string
-	PushType  string //`xorm:"unique(t)"` // branch|tag|commit
+	PushType  string //`xorm:"unique(t)"` // branch|tag|commit // not support with xorm(20140606)
 	PushValue string `xorm:"unique(t)"` //master|v1.2|45asf913
 
 	Status  string

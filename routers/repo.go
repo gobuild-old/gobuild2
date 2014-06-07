@@ -30,6 +30,10 @@ func TriggerBuildRepositoryById(rid int64) (err error) {
 		log.Errorf("get repo by id error: %v", err)
 		return
 	}
+	models.CreateNewBuilding(rid, "master", "", "", models.AC_SRCPKG)
+	if !repo.IsCmd {
+		return nil
+	}
 	oas := map[string]string{
 		"windows": "386",
 		"linux":   "386",
@@ -45,7 +49,6 @@ func TriggerBuildRepositoryById(rid int64) (err error) {
 			log.Errorf("create module error: %v", err)
 		}
 	}
-	models.CreateNewBuilding(rid, "master", "", "", models.AC_SRCPKG)
 	return nil
 }
 
@@ -70,7 +73,7 @@ func Repo(ctx *middleware.Context, params martini.Params, req *http.Request) {
 	if reponame != "" {
 		repo, err = models.GetRepositoryByName(reponame)
 		if err == models.ErrRepositoryNotExists {
-			r, er := AddRepo(reponame)
+			r, er := models.AddRepository(reponame)
 			if er != nil {
 				err = er
 				ctx.Data["Error"] = err.Error()
@@ -78,7 +81,7 @@ func Repo(ctx *middleware.Context, params martini.Params, req *http.Request) {
 				return
 			}
 			TriggerBuildRepositoryById(r.Id)
-			ctx.Redirect(302, req.RequestURI)
+			ctx.Redirect(302, "/"+r.Uri)
 			return
 		}
 		if err != nil {

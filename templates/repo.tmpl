@@ -21,6 +21,7 @@
 			<a href="https://github.com/gobuild/got">got:</a> tool for gobuild<br>
 			<input class="form-control click-select" type="text" value="got install {{.Repo.Uri}}"><br>
 			cgo: {{.Repo.IsCgo}}<br>
+			cmd: {{.Repo.IsCmd}}<br>
 			total download: {{.DownCnt}}<br>
 			<b>last build</b><br>
 			{{range .Last}}
@@ -34,10 +35,12 @@
 	</div>
 	<div class="col-md-4">
 		<ul class="list-group">
+			{{if .Repo.IsCmd}}
 			<li class="list-group-item">Linux<span class="badge">
 				<a href="/download?os=linux&arch={{if .Repo.IsCgo}}amd64{{else}}386{{end}}&rid={{.Repo.Id}}" class="active" style="color:black">download</a></span></li>
 			<li class="list-group-item">Mac<span class="badge"><a href="/download?os=darwin&arch=amd64&rid={{.Repo.Id}}" class="active" style="color:black">download</a></span></li>
 			<li class="list-group-item">Windows<span class="badge"><a href="/download?os=windows&arch=386&rid={{.Repo.Id}}" class="active" style="color:black">download</a></span></li>
+			{{end}}
 			<li class="list-group-item">FullSourceCode<span class="badge"><a href="/download?os=&arch=&rid={{.Repo.Id}}" class="active" style="color:blue">download</a></span></li>
 		</ul>
 	</div>
