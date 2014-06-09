@@ -57,9 +57,9 @@ type PackageConfig struct {
 		Excludes []string `yaml:"excludes"`
 	} `yaml:"filesets"`
 	Settings struct {
-		GoFlags   string `yaml:"goflags"`
+		Addopts   string `yaml:"addopts"` // extra command line options
 		CGOEnable bool   `yaml"cgoenable"`
-	}
+	} `yaml:"settings"`
 }
 
 var DefaultPcfg *PackageConfig
@@ -71,6 +71,6 @@ func init() {
 	pcfg.Filesets.Includes = []string{"README.md", "LICENSE"}
 	pcfg.Filesets.Excludes = []string{".*.go"}
 	pcfg.Settings.CGOEnable = true
-	pcfg.Settings.GoFlags = ""
+	pcfg.Settings.Addopts = ""
 	DefaultPcfg = pcfg
 }

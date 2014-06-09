@@ -39,6 +39,13 @@ type NTMsg struct {
 	Extra  string
 }
 
+var srcpkgCnf = `filesets:
+  includes:
+    - src
+  excludes:
+    - \.git
+`
+
 func GoInterval(dur time.Duration, f func()) chan bool {
 	done := make(chan bool)
 	go func() {
@@ -76,7 +83,6 @@ func steps(m *xrpc.Mission, gopath string, sess *sh.Session, buffer *bytes.Buffe
 	var repoName = m.Repo
 	var binName = filepath.Base(m.Repo)
 	var srcPath = filepath.Join(gopath, "src", repoName)
-	// var buffer = bytes.NewBuffer(nil)
 	var done chan bool
 	var outFile string
 	var storage Storager
@@ -97,18 +103,19 @@ func steps(m *xrpc.Mission, gopath string, sess *sh.Session, buffer *bytes.Buffe
 	if bi.Action == models.AC_BUILD {
 		outFullPath = filepath.Join(srcPath, outFile)
 		task_status = models.ST_BUILDING
-		done = newNotify(buffer)
-		build := func() error {
-			return sess.Command("go", "build", "-v", sh.Dir(srcPath)).Run()
-		}
-		err = build()
-		done <- true
-		notify(string(buffer.Bytes()))
-		if err != nil {
-			log.Errorf("build error: %v", err)
-			return
-		}
-		buffer.Reset()
+		notify(string("build have moved into stage packing"))
+		// done = newNotify(buffer)
+		// build := func() error {
+		// 	return sess.Command("go", "build", "-v", sh.Dir(srcPath)).Run()
+		// }
+		// err = build()
+		// done <- true
+		// notify(string(buffer.Bytes()))
+		// if err != nil {
+		// 	log.Errorf("build error: %v", err)
+		// 	return
+		// }
+		// buffer.Reset()
 
 		// write extra pkginfo
 		task_status = models.ST_PACKING
@@ -118,11 +125,14 @@ func steps(m *xrpc.Mission, gopath string, sess *sh.Session, buffer *bytes.Buffe
 		}
 		defer os.Remove(filepath.Join(srcPath, pkginfo))
 
-		if bi.Os == "windows" {
-			binName += ".exe"
-		}
+		// if bi.Os == "windows" {
+		// 	binName += ".exe"
+		// }
+		_ = binName
+		done = newNotify(buffer)
 		err = sess.Command(PROGRAM, "pack",
-			"--nobuild", "-a", pkginfo, "-a", binName, "-o", outFile, sh.Dir(srcPath)).Run()
+			"-a", pkginfo, "-o", outFile, sh.Dir(srcPath)).Run()
+		done <- true
 		notify(string(buffer.Bytes()))
 		if err != nil {
 			log.Error(err)
@@ -130,13 +140,7 @@ func steps(m *xrpc.Mission, gopath string, sess *sh.Session, buffer *bytes.Buffe
 		}
 		defer os.Remove(outFullPath)
 	} else if bi.Action == models.AC_SRCPKG {
-		gbcnf := `filesets:
-  includes:
-    - src
-  excludes:
-    - \.git
-`
-		ioutil.WriteFile(filepath.Join(gopath, ".gobuild.yml"), []byte(gbcnf), 0644)
+		ioutil.WriteFile(filepath.Join(gopath, ".gobuild.yml"), []byte(srcpkgCnf), 0644)
 
 		task_status = models.ST_PACKING
 		// maybe 7 depth is enough, the hell seven

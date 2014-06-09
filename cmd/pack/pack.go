@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
 	"github.com/gobuild/goyaml"
 	"github.com/gobuild/log"
 
@@ -67,6 +68,11 @@ func Action(c *cli.Context) {
 	sess.SetEnv("GOOS", goos)
 	sess.SetEnv("GOARCH", goarch)
 	sess.ShowCMD = true
+
+	gomarr := strings.Fields(gom)
+	if len(gomarr) >= 1 {
+		sess.Alias("go", gomarr[0], gomarr[1:]...)
+	}
 	// parse yaml
 	var pcfg = new(config.PackageConfig)
 	if sh.Test("file", config.RCFILE) {
@@ -123,7 +129,9 @@ func Action(c *cli.Context) {
 
 	// build source
 	if !nobuild {
-		if err = sess.Command(gom, "build").Run(); err != nil {
+		opts := []string{"build", "-v"}
+		opts = append(opts, strings.Fields(pcfg.Settings.Addopts)...) // TODO: here need to use shell args parse lib
+		if err = sess.Command("go", opts).Run(); err != nil {
 			return
 		}
 		cwd, _ := os.Getwd()
