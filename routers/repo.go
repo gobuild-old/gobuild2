@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-martini/martini"
 	"github.com/gobuild/gobuild2/models"
+	"github.com/gobuild/gobuild2/pkg/base"
 	"github.com/gobuild/log"
 	"github.com/gobuild/middleware"
 )
@@ -104,7 +105,7 @@ func Repo(ctx *middleware.Context, params martini.Params, req *http.Request) {
 		"Repo":       repo,
 		"RecentTask": recentTask,
 		"Tasks":      tasks,
-		"DownCnt":    models.RefreshPageView("/d/"+ctx.Query("id"), 0),
+		"DownCnt":    models.RefreshPageView("/d/"+base.ToStr(repo.Id), 0),
 	}
 	rus, err := models.GetAllLastRepoUpdate(repo.Id)
 	if err != nil {
