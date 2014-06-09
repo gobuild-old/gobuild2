@@ -237,13 +237,8 @@ func work(m *xrpc.Mission) (err error) {
 
 	getsrc := func() (err error) {
 		var params []interface{}
-		params = append(params, "get", "-d", "-v", "-g") // todo: add -d when gopm released
+		params = append(params, "get", "-d", "-v", "-u", "-g") // todo: add -d when gopm released
 		params = append(params, repoName+"@"+m.PushURI)
-		// if m.Sha != "" {
-		// params = append(params, repoName+"@commit:"+m.Sha)
-		// } else {
-		// params = append(params, repoName+"@branch:"+m.Branch)
-		// }
 		params = append(params, sh.Dir(gopath))
 		if err = sess.Command(GOPM, params...).Run(); err != nil {
 			return
@@ -276,47 +271,6 @@ func work(m *xrpc.Mission) (err error) {
 		steps(m, gopath, sess, buffer, bi)
 	}
 	return nil
-
-	// var outFile = filepath.Base(m.UpKey)
-	// var outFullPath = filepath.Join(srcPath, outFile)
-
-	// done = newNotify(models.ST_BUILDING, buffer)
-
-	// err = sess.Command(GOPM, "build", "-u", "-v", sh.Dir(srcPath)).Run()
-	// err = build()
-	// done <- true
-	// notify(models.ST_BUILDING, string(buffer.Bytes()))
-	// if err != nil {
-	// 	log.Errorf("build error: %v", err)
-	// 	return
-	// }
-	// buffer.Reset()
-
-	// write extra pkginfo
-	// pkginfo := "pkginfo.json"
-	// ioutil.WriteFile(filepath.Join(srcPath, pkginfo), m.PkgInfo, 0644)
-
-	// err = sess.Command(PROGRAM, "pack",
-	// 	"--nobuild", "-a", pkginfo, "-o", outFile, sh.Dir(srcPath)).Run()
-	// notify(models.ST_PACKING, string(buffer.Bytes()))
-	// if err != nil {
-	// 	log.Error(err)
-	// 	return
-	// }
-
-	// var cdnPath = m.UpKey
-	// notify(models.ST_PUBLISHING, cdnPath)
-	// log.Infof("cdn path: %s", cdnPath)
-	// q := &Qiniu{m.UpToken, m.UpKey, m.Bulket} // uptoken, key}
-	// var pubAddr string
-	// if pubAddr, err = q.Upload(outFullPath); err != nil {
-	// 	checkError(err)
-	// 	return
-	// }
-
-	// log.Debugf("publish %s to %s", outFile, pubAddr)
-	// notify(models.ST_DONE, pubAddr)
-	// return nil
 }
 
 func init() {

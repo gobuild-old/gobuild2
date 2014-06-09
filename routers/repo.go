@@ -33,7 +33,11 @@ func TriggerBuildRepositoryById(rid int64) (err error) {
 		return
 	}
 	cvsinfo, _ := base.ParseCvsURI(repo.Uri)
-	models.CreateNewBuilding(rid, cvsinfo.Branch, "", "", models.AC_SRCPKG)
+	defaultBranch := "master"
+	if cvsinfo.Provider == base.PVD_GOOGLE {
+		defaultBranch = ""
+	}
+	models.CreateNewBuilding(rid, defaultBranch, "", "", models.AC_SRCPKG)
 	if !repo.IsCmd {
 		return nil
 	}
@@ -47,8 +51,7 @@ func TriggerBuildRepositoryById(rid int64) (err error) {
 		oas["linux"] = "amd64"
 	}
 	for os, arch := range oas {
-
-		err := models.CreateNewBuilding(rid, cvsinfo.Branch, os, arch, models.AC_BUILD)
+		err := models.CreateNewBuilding(rid, defaultBranch, os, arch, models.AC_BUILD)
 		if err != nil {
 			log.Errorf("create module error: %v", err)
 		}
