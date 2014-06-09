@@ -8,6 +8,7 @@ import (
 func Register(m *martini.ClassicMartini) {
 	m.Get("/ruok", Ruok)
 	m.Any("/", Home)
+	m.Any("/doc", Doc)
 	m.Any("/repo", Repo)
 	m.Any("/history", History)
 	m.Any("/download", Download)

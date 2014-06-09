@@ -19,7 +19,9 @@
 	<div class="col-md-8">
 		<div class="well">
 			<a href="https://github.com/gobuild/got">got:</a> tool for gobuild<br>
-			<input class="form-control click-select" type="text" value="got install {{.Repo.Uri}}"><br>
+			<input class="form-control click-select" type="text" value='got install {{.Repo.Uri}}'><br>
+			if you are in linux and not have got installed
+			<input class="form-control click-select" type="text" value='bash -c "$(curl -s {{.RootUrl}}/install_got.sh)" got install {{.Repo.Uri}}'><br>
 			cgo: {{.Repo.IsCgo}}<br>
 			cmd: {{.Repo.IsCmd}}<br>
 			total download: {{.DownCnt}}<br>

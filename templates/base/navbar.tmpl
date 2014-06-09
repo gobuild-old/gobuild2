@@ -46,3 +46,9 @@
 <!-- <div class="container">
 					<h2><a href="/">Home</a> - <h2><a href="/doc">Doc</a><small>doc</small></h2>
 </div> -->
+<script>
+	$(function(){
+		var select = "a[href=\\"+location.pathname+"]";
+		$(select).parent("li").addClass("active");
+	})
+</script>

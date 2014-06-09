@@ -7,6 +7,7 @@ import (
 	"github.com/go-martini/martini"
 	"github.com/gobuild/gobuild2/models"
 	"github.com/gobuild/gobuild2/pkg/base"
+	"github.com/gobuild/gobuild2/pkg/config"
 	"github.com/gobuild/log"
 	"github.com/gobuild/middleware"
 )
@@ -101,12 +102,11 @@ func Repo(ctx *middleware.Context, params martini.Params, req *http.Request) {
 		log.Errorf("get tasks by id, error: %v", err)
 	}
 	recentTask, _ = models.GetTaskById(1)
-	ctx.Data = map[string]interface{}{
-		"Repo":       repo,
-		"RecentTask": recentTask,
-		"Tasks":      tasks,
-		"DownCnt":    models.RefreshPageView("/d/"+base.ToStr(repo.Id), 0),
-	}
+	ctx.Data["Repo"] = repo
+	ctx.Data["RecentTask"] = recentTask
+	ctx.Data["Tasks"] = tasks
+	ctx.Data["DownCnt"] = models.RefreshPageView("/d/"+base.ToStr(repo.Id), 0)
+	ctx.Data["RootUrl"] = config.Config.Server.RootUrl
 	rus, err := models.GetAllLastRepoUpdate(repo.Id)
 	if err != nil {
 		log.Error("get last repo error: %v", err)
