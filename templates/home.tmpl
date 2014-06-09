@@ -25,9 +25,9 @@
 		{{range .Repos}}
 		<li class="list-group-item">
 			[{{.Id}}] 
-			<a class="green" href="https://{{.Uri}}">[github]</a>
-			<a class="green" href="https://gowalker.org/{{.Uri}}">[gowalker]</a>
-			<a href="/repo?id={{.Id}}">{{.Uri}}</a> - {{.Brief}}</li>
+			<!--<a class="green" href="https://{{.Uri}}">[github]</a>
+			<a class="green" href="https://gowalker.org/{{.Uri}}">[gowalker]</a>-->
+			<a href="/{{.Uri}}">{{.Uri}}</a> - {{.Brief}}</li>
 		{{end}}
 	</ul>
 	<ul class="pagination">

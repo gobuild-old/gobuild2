@@ -16,7 +16,6 @@ import (
 	"github.com/codegangsta/cli"
 	"github.com/go-martini/martini"
 	"github.com/gobuild/middleware"
-	"github.com/martini-contrib/binding"
 )
 
 func newMartini() *martini.ClassicMartini {
@@ -47,26 +46,10 @@ func Action(c *cli.Context) {
 		log.Fatal(err)
 	}
 	cfg := config.Config
-	m := newMartini()
 
 	xrpc.HandleRpc()
-	m.Get("/ruok", routers.Ruok)
-	m.Any("/", routers.Home)
-	m.Any("/repo", routers.Repo)
-	m.Any("/history", routers.History)
-	m.Any("/download", routers.Download)
-	m.Post("/new-repo", binding.Bind(routers.RepoInfoForm{}), routers.NewRepo)
-	m.Any("/search", routers.Search)
-
-	m.Group("/api", func(r martini.Router) {
-		m.Get("/pkglist", routers.PkgList)
-		m.Post("/build", binding.Bind(routers.RepositoryForm{}), routers.NewBuild)
-		m.Post("/force-rebuild", binding.Bind(routers.TaskForm{}), routers.ForceRebuild)
-	})
-
-	m.Get("/**", routers.Repo) // for the rest of request
-	// Not found handler.
-	// m.NotFound(routers.NotFound)
+	m := newMartini()
+	routers.Register(m)
 
 	http.Handle("/", m)
 
