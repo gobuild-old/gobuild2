@@ -22,8 +22,9 @@ die(){
 }
 
 test -n "$GOPATH" || die "need go installed"
-fix got go get github.com/gobuild/got || die "got install failed"
+fix got go get -v github.com/gobuild/got || die "got install failed"
 
+set -x
 if test $# -ne 0
 then
 	got "$@"
