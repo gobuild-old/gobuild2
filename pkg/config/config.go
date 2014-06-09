@@ -3,6 +3,9 @@ package config
 import (
 	"fmt"
 
+	"github.com/Unknwon/com"
+	"github.com/codeskyblue/go-sh"
+
 	"code.google.com/p/gcfg"
 )
 
@@ -37,7 +40,12 @@ var Config struct {
 
 func Load(cfgPath string) (err error) {
 	c := &Config
-	err = gcfg.ReadFileInto(c, cfgPath)
+	if !sh.Test("file", cfgPath) {
+		com.Copy(cfgPath+".default", cfgPath)
+	}
+	if err = gcfg.ReadFileInto(c, cfgPath); err != nil {
+		return err
+	}
 	c.Server.RootUrl = fmt.Sprintf("http://%s:%d", c.Server.Domain, c.Server.Port)
 	return
 }

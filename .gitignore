@@ -21,3 +21,4 @@ _testmain.go
 *.sw[px]
 
 *.exe
+conf/app.ini

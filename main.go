@@ -5,10 +5,10 @@ import (
 	"path/filepath"
 
 	"github.com/codegangsta/cli"
-	"github.com/gobuild/gobuild2/pkg/cmd/pack"
-	"github.com/gobuild/gobuild2/pkg/cmd/runinit"
-	"github.com/gobuild/gobuild2/pkg/cmd/slave"
-	"github.com/gobuild/gobuild2/pkg/cmd/web"
+	"github.com/gobuild/gobuild2/cmd/pack"
+	"github.com/gobuild/gobuild2/cmd/runinit"
+	"github.com/gobuild/gobuild2/cmd/slave"
+	"github.com/gobuild/gobuild2/cmd/web"
 	"github.com/gobuild/log"
 )
 
