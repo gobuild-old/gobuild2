@@ -20,8 +20,7 @@ type TaskForm struct {
 }
 
 func NewRepo(rf RepoInfoForm, ctx *middleware.Context) {
-	defer ctx.Redirect(302, "/")
-	models.AddRepository(rf.Name)
+	ctx.Redirect(302, "/"+rf.Name)
 }
 
 func Home(ctx *middleware.Context) {

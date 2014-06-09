@@ -32,7 +32,8 @@ func TriggerBuildRepositoryById(rid int64) (err error) {
 		log.Errorf("get repo by id error: %v", err)
 		return
 	}
-	models.CreateNewBuilding(rid, "master", "", "", models.AC_SRCPKG)
+	cvsinfo, _ := base.ParseCvsURI(repo.Uri)
+	models.CreateNewBuilding(rid, cvsinfo.Branch, "", "", models.AC_SRCPKG)
 	if !repo.IsCmd {
 		return nil
 	}
@@ -46,7 +47,8 @@ func TriggerBuildRepositoryById(rid int64) (err error) {
 		oas["linux"] = "amd64"
 	}
 	for os, arch := range oas {
-		err := models.CreateNewBuilding(rid, "master", os, arch, models.AC_BUILD)
+
+		err := models.CreateNewBuilding(rid, cvsinfo.Branch, os, arch, models.AC_BUILD)
 		if err != nil {
 			log.Errorf("create module error: %v", err)
 		}

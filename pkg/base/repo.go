@@ -61,8 +61,17 @@ func ParseCvsURI(uri string) (*CVSInfo, error) {
 	if len(fields) < 3 {
 		return nil, ErrCvsURIInvalid
 	}
+	branch := ""
+	switch provider {
+	case PVD_GITHUB:
+		branch = "master"
+	case PVD_GOOGLE:
+		branch = "default" // for hg
+	}
+	// log.Infof("branch: %v", branch)
 	return &CVSInfo{
 		Provider:       provider,
+		Branch:         branch,
 		VersionControl: ProviderCtrlMap[provider],
 		Owner:          fields[1],
 		RepoName:       fields[2],
