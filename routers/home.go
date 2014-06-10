@@ -2,6 +2,7 @@ package routers
 
 import (
 	"github.com/gobuild/gobuild2/models"
+	"github.com/gobuild/gobuild2/pkg/base"
 
 	"github.com/gobuild/log"
 	"github.com/gobuild/middleware"
@@ -20,7 +21,8 @@ type TaskForm struct {
 }
 
 func NewRepo(rf RepoInfoForm, ctx *middleware.Context) {
-	ctx.Redirect(302, "/"+rf.Name)
+	ci, _ := base.ParseCvsURI(rf.Name)
+	ctx.Redirect(302, "/"+ci.FullPath)
 }
 
 func Home(ctx *middleware.Context) {
