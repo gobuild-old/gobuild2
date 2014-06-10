@@ -241,7 +241,7 @@ func work(m *xrpc.Mission) (err error) {
 
 	getsrc := func() (err error) {
 		var params []interface{}
-		params = append(params, "get", "-d", "-v", "-u", "-g") // todo: add -d when gopm released
+		params = append(params, "get", "-d", "-v", "-g") // todo: add -d when gopm released
 		params = append(params, repoName+"@"+m.PushURI)
 		params = append(params, sh.Dir(gopath))
 		if err = sess.Command(GOPM, params...).Run(); err != nil {
