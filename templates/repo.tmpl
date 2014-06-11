@@ -23,6 +23,13 @@
 			<input class="form-control click-select" type="text" value='got install {{.Repo.Uri}}'><br>
 			if you are in linux and not have got installed
 			<input class="form-control click-select" type="text" value='bash -c "$(curl {{.RootUrl}}/install_got.sh)" got install {{.Repo.Uri}}'><br>
+			<h3>Badge (not recommend to use now)</h3>
+			<img src="/badge/{{.Repo.Uri}}/download.png"><br>
+			Use one of the snippets below to add a link to GoBuild from your project website or README file:<br>
+			<b>HTML</b>
+			<input class="form-control click-select" type="text" value='<a href="{{.RootUrl}}/{{.Repo.Uri}}"><img src="{{.RootUrl}}/badge/{{.Repo.Uri}}/download.png" alt="GoBuild"></a>'>
+			<b>Markdown</b>
+			<input class="form-control click-select" type="text" value="[![Gobuild Download]({{.RootUrl}}/badge/{{.Repo.Uri}}/download.png)]({{.RootUrl}}/{{.Repo.Uri}})"><br>
 			{{end}}
 			cgo: {{.Repo.IsCgo}}<br>
 			cmd: {{.Repo.IsCmd}}<br>

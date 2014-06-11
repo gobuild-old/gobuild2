@@ -21,6 +21,7 @@ func Register(m *martini.ClassicMartini) {
 		m.Post("/force-rebuild", binding.Bind(TaskForm{}), ForceRebuild)
 	})
 
+	m.Get("/badge/**", Badge)
 	m.Get("/**", Repo) // for the rest of request
 	// Not found handler.
 	// m.NotFound(routers.NotFound)
