@@ -12,7 +12,7 @@ import (
 var Config struct {
 	Server struct {
 		Domain  string `gcfg:"DOMAIN"`
-		RootUrl string `gcfg:"-"`
+		RootUrl string `gcfg:"ROOTURL"`
 		Addr    string `gcfg:"ADDR"`
 		Port    int    `gcfg:"PORT"`
 	}
@@ -46,7 +46,9 @@ func Load(cfgPath string) (err error) {
 	if err = gcfg.ReadFileInto(c, cfgPath); err != nil {
 		return err
 	}
-	c.Server.RootUrl = fmt.Sprintf("http://%s:%d", c.Server.Domain, c.Server.Port)
+	if c.Server.RootUrl == "" {
+		c.Server.RootUrl = fmt.Sprintf("http://%s:%d", c.Server.Domain, c.Server.Port)
+	}
 	return
 }
 

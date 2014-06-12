@@ -2,6 +2,7 @@
 DOMAIN = localhost
 ADDR = 
 PORT = 8000
+ROOTURL = 
 
 [database]
 DBTYPE = mysql
