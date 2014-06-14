@@ -2,14 +2,12 @@ package pack
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
 	"runtime"
 	"strings"
 
-	"github.com/gobuild/goyaml"
 	"github.com/gobuild/log"
 
 	"github.com/codegangsta/cli"
@@ -80,20 +78,25 @@ func Action(c *cli.Context) {
 	if len(gomarr) >= 1 {
 		sess.Alias("go", gomarr[0], gomarr[1:]...)
 	}
+
 	// parse yaml
-	var pcfg = new(config.PackageConfig)
-	if sh.Test("file", config.RCFILE) {
-		data, er := ioutil.ReadFile(config.RCFILE)
-		if er != nil {
-			err = er
-			return
-		}
-		if err = goyaml.Unmarshal(data, pcfg); err != nil {
-			return
-		}
-	} else {
-		pcfg = config.DefaultPcfg
+	pcfg, err := config.ReadPkgConfig(config.RCFILE)
+	if err != nil {
+		return
 	}
+	// var pcfg = new(config.PackageConfig)
+	// if sh.Test("file", config.RCFILE) {
+	// 	data, er := ioutil.ReadFile(config.RCFILE)
+	// 	if er != nil {
+	// 		err = er
+	// 		return
+	// 	}
+	// 	if err = goyaml.Unmarshal(data, pcfg); err != nil {
+	// 		return
+	// 	}
+	// } else {
+	// 	pcfg = config.DefaultPcfg
+	// }
 	pwd, _ := os.Getwd()
 	gobin := filepath.Join(pwd, sanitizedName(pcfg.Settings.TargetDir))
 	sess.SetEnv("GOBIN", gobin)

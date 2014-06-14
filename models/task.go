@@ -214,30 +214,6 @@ func UpdatePubAddr(tid int64, pubAddr string) error {
 }
 
 func UpdateTaskStatus(tid int64, status string, output string) error {
-	// pubAddr := ""
-	// if status == ST_DONE {
-	// 	pubAddr = output
-	// 	tk, _ := GetTaskById(tid)
-	// 	condi := LastRepoUpdate{
-	// 		Rid:       tk.Rid,
-	// 		TagBranch: tk.TagBranch,
-	// 		Os:        tk.Os,
-	// 		Arch:      tk.Arch}
-	// 	lr := condi
-	// 	pushURI := tk.PushType + ":" + tk.PushValue
-	// 	if has, err := orm.Get(&lr); err == nil && has {
-	// 		orm.Update(&LastRepoUpdate{PushURI: pushURI, ZipBallUrl: pubAddr}, &condi)
-	// 	} else {
-	// 		condi.ZipBallUrl = pubAddr
-	// 		condi.PushURI = pushURI
-	// 		if _, err := orm.Insert(&condi); err != nil {
-	// 			log.Errorf("insert last_repo_update failed: %v", err)
-	// 		}
-	// 	}
-	// }
-	// if _, err := orm.Id(tid).Update(&Task{Status: status, ArchieveAddr: pubAddr}); err != nil {
-	// 	return err
-	// }
 	log.Debugf("update task(%d) status(%s)", tid, status)
 	if _, err := orm.Id(tid).Update(&Task{Status: status}); err != nil {
 		log.Errorf("update task status error: %v", err)

@@ -48,8 +48,9 @@ type Mission struct {
 	Idle time.Duration
 	Mid  int64
 
-	Repo    string
+	// Repo        string
 	PushURI string
+	Repo    *models.Repository
 
 	CgoEnable bool
 
@@ -106,7 +107,7 @@ func (r *Rpc) GetMission(args *HostInfo, rep *Mission) error {
 
 	task := tasks[0] // use first task
 	rep.Mid = task.Id
-	rep.Repo = task.Repo.Uri
+	rep.Repo = task.Repo
 	rep.PushURI = task.PushType + ":" + task.PushValue
 	rep.CgoEnable = task.CgoEnable
 	rep.PkgInfo, _ = json.MarshalIndent(PkgInfo{
@@ -119,13 +120,13 @@ func (r *Rpc) GetMission(args *HostInfo, rep *Mission) error {
 		if tk.TagBranch == "" {
 			tk.TagBranch = "temp-" + tk.PushType + ":" + tk.PushValue
 		}
-		filename := fmt.Sprintf("%s-%s-%s.%s", filepath.Base(rep.Repo), tk.Os, tk.Arch, "zip")
+		filename := fmt.Sprintf("%s-%s-%s.%s", filepath.Base(rep.Repo.Uri), tk.Os, tk.Arch, "zip")
 		if tk.Action == models.AC_SRCPKG {
-			filename = fmt.Sprintf("%s-all-source.%s", filepath.Base(rep.Repo), "zip")
+			filename = fmt.Sprintf("%s-all-source.%s", filepath.Base(rep.Repo.Uri), "zip")
 		}
 		key := com.Expand("m{tid}/{reponame}/br-{branch}/{filename}", map[string]string{
 			"tid":      strconv.Itoa(int(rep.Mid)),
-			"reponame": rep.Repo,
+			"reponame": rep.Repo.Uri,
 			"branch":   tk.TagBranch,
 			"filename": filename,
 		})
@@ -168,6 +169,12 @@ func (r *Rpc) UpdateMissionStatus(args *MissionStatus, reply *bool) error {
 	log.Debugf("update status: mid(%d) status(%s) extra(%s)", args.Mid, args.Status, args.Extra)
 	*reply = true
 	err := models.UpdateTaskStatus(args.Mid, args.Status, args.Output)
+	return err
+}
+
+func (r *Rpc) UpdateRepository(ri *models.Repository, reply *bool) error {
+	_, err := models.UpdateRepository(ri, &models.Repository{Id: ri.Id})
+	*reply = true
 	return err
 }
 
