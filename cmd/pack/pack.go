@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 
 	"github.com/gobuild/goyaml"
@@ -58,6 +59,12 @@ func Action(c *cli.Context) {
 	var nobuild = c.Bool("nobuild")
 	var adds = c.StringSlice("add")
 
+	if goos == "" {
+		goos = runtime.GOOS
+	}
+	if goarch == "" {
+		goarch = runtime.GOARCH
+	}
 	var err error
 	defer func() {
 		if err != nil {
@@ -87,21 +94,16 @@ func Action(c *cli.Context) {
 	} else {
 		pcfg = config.DefaultPcfg
 	}
+	pwd, _ := os.Getwd()
+	gobin := filepath.Join(pwd, sanitizedName(pcfg.Settings.TargetDir))
+	sess.SetEnv("GOBIN", gobin)
+	log.Debugf("set env GOBIN=%s", gobin)
 	log.Debug("config:", pcfg)
 	pcfg.Filesets.Includes = append(pcfg.Filesets.Includes, adds...)
 
 	var skips []*regexp.Regexp
 	for _, str := range pcfg.Filesets.Excludes {
 		skips = append(skips, regexp.MustCompile("^"+str+"$"))
-	}
-
-	var files []string
-	for _, filename := range pcfg.Filesets.Includes {
-		fs, err := findFiles(filename, depth, skips)
-		if err != nil {
-			return
-		}
-		files = append(files, fs...)
 	}
 
 	log.Infof("archive file to: %s", output)
@@ -127,22 +129,42 @@ func Action(c *cli.Context) {
 		return
 	}
 
+	var files []string
 	// build source
 	if !nobuild {
-		opts := []string{"build", "-v"}
+		targetDir := sanitizedName(pcfg.Settings.TargetDir)
+		if !sh.Test("dir", targetDir) {
+			os.MkdirAll(targetDir, 0755)
+		}
+		symdir := filepath.Join(targetDir, goos+"_"+goarch)
+		if err = os.Symlink(gobin, symdir); err != nil {
+			log.Fatalf("os symlink error: %s", err)
+		}
+		defer os.Remove(symdir)
+		opts := []string{"install", "-v"}
 		opts = append(opts, strings.Fields(pcfg.Settings.Addopts)...) // TODO: here need to use shell args parse lib
 		if err = sess.Command("go", opts).Run(); err != nil {
 			return
 		}
+		os.Remove(symdir) // I have to do it twice
 		cwd, _ := os.Getwd()
 		program := filepath.Base(cwd)
 		if goos == "windows" {
 			program += ".exe"
 		}
-		files = append(files, program)
+		if sh.Test("file", program) {
+			files = append(files, program)
+		}
 	}
 
 	log.Debug("archive files")
+	for _, filename := range pcfg.Filesets.Includes {
+		fs, err := findFiles(filename, depth, skips)
+		if err != nil {
+			return
+		}
+		files = append(files, fs...)
+	}
 	for _, file := range files {
 		log.Infof("zip add file: %v", file)
 		if err = z.Add(file); err != nil {
