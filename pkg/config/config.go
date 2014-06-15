@@ -4,12 +4,10 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"launchpad.net/goyaml"
-
+	"code.google.com/p/gcfg"
 	"github.com/Unknwon/com"
 	"github.com/codeskyblue/go-sh"
-
-	"code.google.com/p/gcfg"
+	"github.com/gobuild/goyaml"
 )
 
 var Config struct {
