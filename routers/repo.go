@@ -41,21 +41,21 @@ func TriggerBuildRepositoryById(rid int64) (err error) {
 	if !repo.IsCmd {
 		return nil
 	}
-	oas := map[string]string{
-		"windows": "386",
-		"windows": "amd64",
-		"linux":   "386",
-		"linux":   "amd64",
-		"darwin":  "amd64",
+	oas := map[string][]string{
+		"windows": []string{"386", "amd64"},
+		"linux":   []string{"386", "amd64"},
+		"darwin":  []string{"amd64"},
 	}
 	if repo.IsCgo {
 		delete(oas, "windows")
-		oas["linux"] = "amd64"
+		oas["linux"] = []string{"amd64"}
 	}
-	for os, arch := range oas {
-		err := models.CreateNewBuilding(rid, defaultBranch, os, arch, models.AC_BUILD)
-		if err != nil {
-			log.Errorf("create module error: %v", err)
+	for os, archs := range oas {
+		for _, arch := range archs {
+			err := models.CreateNewBuilding(rid, defaultBranch, os, arch, models.AC_BUILD)
+			if err != nil {
+				log.Errorf("create module error: %v", err)
+			}
 		}
 	}
 	return nil
