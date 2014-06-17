@@ -43,7 +43,9 @@ func TriggerBuildRepositoryById(rid int64) (err error) {
 	}
 	oas := map[string]string{
 		"windows": "386",
+		"windows": "amd64",
 		"linux":   "386",
+		"linux":   "amd64",
 		"darwin":  "amd64",
 	}
 	if repo.IsCgo {
