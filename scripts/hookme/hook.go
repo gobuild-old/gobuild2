@@ -8,9 +8,21 @@
 
 package main
 
-type HookInfo struct {
-	Name       string `json:"name"`
-	Secret     string `json:"secret"`
-	Repo       string `json:"repo"`
-	ZipballUrl string `json:"zipball_url"`
+type GogsUser struct {
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+
+type GogsCommit struct {
+	Id      string   `json:"id"`
+	Message string   `json:"message"`
+	Url     string   `json:"url"`
+	Author  GogsUser `json:"author"`
+}
+
+type GogsPayload struct {
+	Secret  string       `json:"secret"`
+	Ref     string       `json:"ref"`
+	Commits []GogsCommit `json:"commits"`
+	Pusher  GogsUser     `json:"pusher"`
 }

@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/codeskyblue/go-sh"
-	"github.com/gobuild/log"
 	"io"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/codeskyblue/go-sh"
+	"github.com/gobuild/log"
 )
 
 func Hello(w http.ResponseWriter, _ *http.Request) {
@@ -21,16 +22,16 @@ const (
 	RECEIVER    = "./receiver"
 )
 
-func Hook(w http.ResponseWriter, r *http.Request) {
+func HookGogs(w http.ResponseWriter, r *http.Request) {
 	body, _ := ioutil.ReadAll(r.Body)
-	info := new(HookInfo)
-	err := json.Unmarshal(body, info) // body)
+	payload := new(GogsPayload)
+	err := json.Unmarshal(body, payload) // body)
 	if err != nil {
 		log.Errorf("unmarshal request hook infomation error: %v", err)
 		return
 	}
 	if sh.Test("x", AUTHCHECKER) {
-		err := sh.Command(AUTHCHECKER, info.Secret).Run()
+		err := sh.Command(AUTHCHECKER, payload.Secret).Run()
 		if err != nil {
 			log.Errorf("authchecker not passed: %v", err)
 			return
@@ -40,15 +41,20 @@ func Hook(w http.ResponseWriter, r *http.Request) {
 		log.Errorf("need script '%s'", RECEIVER)
 		return
 	}
-	if err := sh.Command(RECEIVER, info.Repo, info.ZipballUrl).Run(); err != nil {
+	env := map[string]string{
+		"PUSH_NAME":  payload.Pusher.Name,
+		"PUSH_EMAIL": payload.Pusher.Email,
+	}
+	if err := sh.Command(RECEIVER, payload.Ref, env).Run(); err != nil {
 		log.Errorf("call %s error: %v", RECEIVER, err)
 	}
-	fmt.Printf("receive: %v\n", string(body))
+	fmt.Printf("receive: %v\n", payload.Ref)
 }
 
 func init() {
 	http.HandleFunc("/", Hello)
-	http.HandleFunc("/webhook", Hook)
+	//http.HandleFunc("/webhook", HookGogs)
+	http.HandleFunc("/webhook/gogs", HookGogs)
 }
 
 func main() {
