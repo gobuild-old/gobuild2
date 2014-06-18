@@ -19,8 +19,19 @@ how to install
 ### Hooks
 [click to enter readme](scripts/hookme/README.md)
 
-### Hook client
-TODO
+### gobuild setting .gobuild.yml
+sample:
+
+	filesets:
+	  includes:
+	  - README.md
+	  - LICENSE
+	  excludes:
+	  - .*.go
+	settings:
+	  targetdir: ""
+	  addopts: ""
+	  yaml"cgoenable": false
 
 ### NOTICES
 developing now...

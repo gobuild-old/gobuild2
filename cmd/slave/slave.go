@@ -14,6 +14,7 @@ import (
 	"github.com/codeskyblue/go-sh"
 	"github.com/gobuild/gobuild2/models"
 	"github.com/gobuild/gobuild2/pkg/base"
+	"github.com/gobuild/gobuild2/pkg/config"
 	"github.com/gobuild/gobuild2/pkg/xrpc"
 	"github.com/gobuild/log"
 )
@@ -80,8 +81,8 @@ func steps(m *xrpc.Mission, gopath string, sess *sh.Session, buffer *bytes.Buffe
 		}
 	}()
 
-	var repoName = m.Repo
-	var binName = filepath.Base(m.Repo)
+	var repoName = m.Repo.Uri
+	var binName = filepath.Base(m.Repo.Uri)
 	var srcPath = filepath.Join(gopath, "src", repoName)
 	var done chan bool
 	var outFile string
@@ -195,15 +196,6 @@ func reportPubAddr(mid int64, zipballurl string) error {
 }
 
 func work(m *xrpc.Mission) (err error) {
-	// notify := func(status string, output string, extra ...string) {
-	// 	mstatus := &xrpc.MissionStatus{Mid: m.Mid, Status: status,
-	// 		Output: output,
-	// 		Extra:  strings.Join(extra, ""),
-	// 	}
-	// 	ok := false
-	// 	err := xrpc.Call("UpdateMissionStatus", mstatus, &ok)
-	// 	checkError(err)
-	// }
 	defer func() {
 		fmt.Println("DONE", err)
 		if err != nil {
@@ -230,13 +222,9 @@ func work(m *xrpc.Mission) (err error) {
 	}
 	defer os.RemoveAll(gopath)
 	sess.SetEnv("GOPATH", gopath)
-	sess.SetEnv("CGO_ENABLE", "0")
-	if m.CgoEnable {
-		sess.SetEnv("CGO_ENABLE", "1")
-	}
 	sess.SetTimeout(time.Minute * 10) // timeout in 10minutes
 
-	var repoName = m.Repo
+	var repoName = m.Repo.Uri
 	var srcPath = filepath.Join(gopath, "src", repoName)
 
 	getsrc := func() (err error) {
@@ -247,6 +235,27 @@ func work(m *xrpc.Mission) (err error) {
 		if err = sess.Command(GOPM, params...).Run(); err != nil {
 			return
 		}
+
+		// parse .gobuild.yml (need to set env CGO_ENABLE)
+		pcfg, err := config.ReadPkgConfig(filepath.Join(gopath, "src", m.Repo.Uri, config.RCFILE))
+		if err != nil {
+			return
+		}
+		if m.Repo.IsCmd == false && pcfg.Settings.Addopts != "" {
+			ok := false
+			m.Repo.IsCmd = true
+			err = xrpc.Call("UpdateRepository", m.Repo, &ok)
+			if err != nil {
+				return
+			}
+			log.Infof("update repo %s: iscmd=true", m.Repo.Uri)
+		}
+		// Also need to judge from .gobuild.yml
+		sess.SetEnv("CGO_ENABLE", "0")
+		if m.CgoEnable {
+			sess.SetEnv("CGO_ENABLE", "1")
+		}
+
 		if err = sess.Command("go", "get", "-v", sh.Dir(srcPath)).Run(); err != nil {
 			return
 		}

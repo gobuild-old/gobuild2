@@ -81,6 +81,10 @@ func AddRepository(repoName string) (r *Repository, err error) {
 	return r, nil
 }
 
+func UpdateRepository(v *Repository, condi *Repository) (int64, error) {
+	return orm.UseBool().Update(v, condi)
+}
+
 func CreateRepository(r *Repository) (*Repository, error) {
 	// r := &Repository{Uri: repoUri}
 	if has, err := orm.Get(r); err == nil && has {

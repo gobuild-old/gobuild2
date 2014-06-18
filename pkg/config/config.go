@@ -2,11 +2,12 @@ package config
 
 import (
 	"fmt"
-
-	"github.com/Unknwon/com"
-	"github.com/codeskyblue/go-sh"
+	"io/ioutil"
 
 	"code.google.com/p/gcfg"
+	"github.com/Unknwon/com"
+	"github.com/codeskyblue/go-sh"
+	"github.com/gobuild/goyaml"
 )
 
 var Config struct {
@@ -59,8 +60,9 @@ type PackageConfig struct {
 		Excludes []string `yaml:"excludes"`
 	} `yaml:"filesets"`
 	Settings struct {
-		Addopts   string `yaml:"addopts"` // extra command line options
-		CGOEnable bool   `yaml"cgoenable"`
+		TargetDir string `yaml:"targetdir"` // target dir
+		Addopts   string `yaml:"addopts"`   // extra command line options
+		CGOEnable *bool  `yaml"cgoenable"`
 	} `yaml:"settings"`
 }
 
@@ -72,7 +74,26 @@ func init() {
 	pcfg := &PackageConfig{}
 	pcfg.Filesets.Includes = []string{"README.md", "LICENSE"}
 	pcfg.Filesets.Excludes = []string{".*.go"}
-	pcfg.Settings.CGOEnable = true
+	// pcfg.Settings.CGOEnable = true // the default CGOEnable should be nil
+	pcfg.Settings.TargetDir = ""
 	pcfg.Settings.Addopts = ""
 	DefaultPcfg = pcfg
+}
+
+// parse yaml
+func ReadPkgConfig(filepath string) (pcfg PackageConfig, err error) {
+	pcfg = PackageConfig{}
+	if sh.Test("file", filepath) {
+		data, er := ioutil.ReadFile(filepath)
+		if er != nil {
+			err = er
+			return
+		}
+		if err = goyaml.Unmarshal(data, &pcfg); err != nil {
+			return
+		}
+	} else {
+		pcfg = *DefaultPcfg
+	}
+	return pcfg, nil
 }

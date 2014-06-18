@@ -62,7 +62,7 @@ func BadgeEncode(w io.Writer, message string) (err error) {
 		return
 	}
 	c.SetSrc(image.Black)
-	pt = freetype.Pt(middle+gap, 12)
+	pt = freetype.Pt(middle+gap, 13)
 	_, err = c.DrawString(message, pt)
 
 	// w.Header().Set("Content-Type", "image/png")
