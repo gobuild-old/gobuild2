@@ -15,13 +15,14 @@ var (
 )
 
 type Repository struct {
-	Id      int64
-	Uri     string `xorm:"unique(r)"`
-	Brief   string
-	IsCgo   bool
-	IsCmd   bool
-	Tags    []string
-	Created time.Time `xorm:"created"`
+	Id            int64
+	Uri           string `xorm:"unique(r)"`
+	Brief         string
+	IsCgo         bool
+	IsCmd         bool
+	Tags          []string
+	Created       time.Time `xorm:"created"`
+	DownloadCount int64
 }
 
 type RepoStatistic struct {
