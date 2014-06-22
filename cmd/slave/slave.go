@@ -267,12 +267,12 @@ func work(m *xrpc.Mission) (err error) {
 			reportProgress(m.Mid, status, string(buf.Bytes()))
 		})
 	}
-	reportProgress(m.Mid, models.ST_RETRIVING, "start get source code")
+	reportProgress(m.Mid, models.ST_RETRIEVING, "start get source code")
 	var done chan bool
-	done = newNotify(models.ST_RETRIVING, buffer)
+	done = newNotify(models.ST_RETRIEVING, buffer)
 	err = getsrc()
 	done <- true
-	reportProgress(m.Mid, models.ST_RETRIVING, string(buffer.Bytes()))
+	reportProgress(m.Mid, models.ST_RETRIEVING, string(buffer.Bytes()))
 	if err != nil {
 		log.Errorf("getsource err: %v", err)
 		return
