@@ -13,7 +13,7 @@ import (
 const (
 	ST_READY      = "ready"
 	ST_PENDING    = "pending"
-	ST_RETRIVING  = "retrieving"
+	ST_RETRIEVING  = "retrieving"
 	ST_BUILDING   = "building"
 	ST_PACKING    = "packing"
 	ST_PUBLISHING = "publishing"
