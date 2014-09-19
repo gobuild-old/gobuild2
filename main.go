@@ -29,7 +29,7 @@ func init() {
 			Usage:  "start gobuild compile slave",
 			Action: slave.Action,
 			Flags: []cli.Flag{
-				cli.StringFlag{"webaddr,w", "localhost:8010", "gobuild2 web address"},
+				cli.StringFlag{Name: "webaddr,w", Value: "localhost:8010", Usage: "gobuild2 web address"},
 			},
 		},
 		cli.Command{
@@ -42,13 +42,13 @@ func init() {
 			Usage:  "build and pack file into tgz or zip",
 			Action: pack.Action,
 			Flags: []cli.Flag{
-				cli.StringFlag{"os", os.Getenv("GOOS"), "operation system"},
-				cli.StringFlag{"arch", os.Getenv("GOARCH"), "arch"},
-				cli.StringFlag{"depth", "3", "depth of file to walk"},
-				cli.StringFlag{"output,o", program + ".zip", "target file"},
-				cli.StringFlag{"gom", "go", "go package manage program"},
-				cli.BoolFlag{"nobuild", "donot call go build when pack"},
-				cli.StringSliceFlag{"add,a", &cli.StringSlice{}, "add file"},
+				cli.StringFlag{Name: "os", Value: os.Getenv("GOOS"), Usage: "operation system"},
+				cli.StringFlag{Name: "arch", Value: os.Getenv("GOARCH")},
+				cli.StringFlag{Name: "depth", Value: "3", Usage: "depth of file to walk"},
+				cli.StringFlag{Name: "output,o", Value: program + ".zip", Usage: "target file"},
+				cli.StringFlag{Name: "gom", Value: "go", Usage: "go package manage program"},
+				cli.BoolFlag{Name: "nobuild", Usage: "donot call go build when pack"},
+				cli.StringSliceFlag{Name: "add,a", Value: &cli.StringSlice{}, Usage: "add file"},
 			},
 		},
 		cli.Command{
@@ -56,7 +56,7 @@ func init() {
 			Usage:  "start gobuild web server",
 			Action: web.Action,
 			Flags: []cli.Flag{
-				cli.StringFlag{"conf,f", "conf/app.ini", "config file"},
+				cli.StringFlag{Name: "conf,f", Value: "conf/app.ini"},
 			},
 		},
 	)
